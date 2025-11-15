@@ -7,7 +7,7 @@ Text::Text(string content, float x, float y, Game* game) {
 	this->game = game;
 }
 
-void Text::draw() {
+void Text::draw(float scrollX, float scrollY) {
 	SDL_Color color;
 	color.r = 255;
 	color.g = 255;
