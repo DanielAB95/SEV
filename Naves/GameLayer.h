@@ -12,8 +12,11 @@
 #include "PowerUp.h"
 #include "LifesPowerUp.h"
 #include "ShootPowerUp.h"
-
+#include "Tile.h"
 #include <list>
+#include <fstream> // Leer ficheros
+#include <sstream> // Leer líneas / String
+#include "Space.h" // importar
 
 class GameLayer : public Layer
 {
@@ -24,6 +27,15 @@ public:
 	void update() override;
 	void draw() override;
 	void keysToControls(SDL_Event event);
+	void loadMap(string name);
+	void loadMapObject(char character, float x, float y);
+	void calculateScroll();
+	Space* space;
+	float scrollX;
+	float scrollY;
+
+	int mapWidth;
+	list<Tile*> tiles;
 
 	Audio* audioBackground;
 	Text* textPoints;

@@ -5,14 +5,19 @@ Player::Player(float x, float y, Game* game)
 
 	audioShoot = Audio::createAudio("res/efecto_disparo.wav", false);
 	lives = 3;
+
+	aMoving = new Animation("res/enemigo_movimiento.png", width, height,
+		108, 40, 6, 3, game);
+	animation = aMoving;
 }
 
 void Player::update() {
 	if (shootTime > 0) {
 		shootTime--;
 	}
-	x = x + vx;
-	y = y + vy;
+	// NO mover aquí - el movimiento lo maneja Space::update()
+	// x = x + vx;
+	// y = y + vy;
 }
 
 Projectile* Player::shoot() {
@@ -35,5 +40,11 @@ void Player::moveX(float axis) {
 void Player::moveY(float axis) {
 	vy = axis * 3;
 }
+
+
+void Player::draw(float scrollX, float scrollY) {
+	animation->draw(x - scrollX, y- scrollY);
+}
+
 
 

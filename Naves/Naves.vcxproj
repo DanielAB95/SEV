@@ -156,6 +156,9 @@
     <ClCompile Include="Audio.cpp" />
     <ClCompile Include="Background.cpp" />
     <ClCompile Include="BasicEnemy.cpp" />
+    <ClCompile Include="Checkpoint.cpp" />
+    <ClCompile Include="CollectibleItem.cpp" />
+    <ClCompile Include="DestructibleTile.cpp" />
     <ClCompile Include="Enemy.cpp" />
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="GameLayer.cpp" />
@@ -167,7 +170,9 @@
     <ClCompile Include="Projectile.cpp" />
     <ClCompile Include="ShootPowerUp.cpp" />
     <ClCompile Include="SMovingEnemy.cpp" />
+    <ClCompile Include="Space.cpp" />
     <ClCompile Include="Text.cpp" />
+    <ClCompile Include="Tile.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Actor.h" />
@@ -175,6 +180,9 @@
     <ClInclude Include="Audio.h" />
     <ClInclude Include="Background.h" />
     <ClInclude Include="BasicEnemy.h" />
+    <ClInclude Include="Checkpoint.h" />
+    <ClInclude Include="CollectibleItem.h" />
+    <ClInclude Include="DestructibleTile.h" />
     <ClInclude Include="Enemy.h" />
     <ClInclude Include="Game.h" />
     <ClInclude Include="GameLayer.h" />
@@ -185,7 +193,9 @@
     <ClInclude Include="Projectile.h" />
     <ClInclude Include="ShootPowerUp.h" />
     <ClInclude Include="SMovingEnemy.h" />
+    <ClInclude Include="Space.h" />
     <ClInclude Include="Text.h" />
+    <ClInclude Include="Tile.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

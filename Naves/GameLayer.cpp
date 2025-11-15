@@ -1,4 +1,4 @@
-#include "GameLayer.h"
+﻿#include "GameLayer.h"
 
 GameLayer::GameLayer(Game* game)
 	: Layer(game) {
@@ -7,6 +7,9 @@ GameLayer::GameLayer(Game* game)
 }
 
 void GameLayer::init() {
+	space = new Space(0);
+	scrollX = 0;
+	scrollY = 0;
 	audioBackground = Audio::createAudio("res/musica_ambiente.mp3", true);
 	audioBackground->play();
 
@@ -14,11 +17,7 @@ void GameLayer::init() {
 	textPoints = new Text("hola", WIDTH * 0.92, 
 		HEIGHT *0.05, game);
 	textPoints->content = to_string(points);
-	player = new Player(50 , HEIGHT/2, game);
-	lifePoints = new Text("adios", WIDTH * 0.15,
-		HEIGHT * 0.05, game);
-	lifePoints->content = to_string(player->lives);
-	textShoots = new Text("0", player->x, player->y + 20, game);
+
 	background = new Background("res/fondo.png", WIDTH * 0.5, HEIGHT * 0.5, -1, game);
 	backgroundPoints = new Actor("res/icono_puntos.png", WIDTH * 0.85,
 		HEIGHT * 0.05, 24, 24, game);
@@ -27,8 +26,13 @@ void GameLayer::init() {
 	projectiles.clear(); // Vaciar por si reiniciamos el juego
 	powerUps.clear();
 	enemies.clear(); // Vaciar por si reiniciamos el juego
-	enemies.push_back(new BasicEnemy(300, 50, game));
-	enemies.push_back(new BasicEnemy(450, 200, game));
+
+	loadMap("res/0.txt");  // ← player se crea aquí
+
+	lifePoints = new Text("adios", WIDTH * 0.15,
+		HEIGHT * 0.05, game);
+	lifePoints->content = to_string(player->lives);
+	textShoots = new Text("0", player-> x+100, player->y + 15, game);
 }
 
 void GameLayer::processControls() {
@@ -42,6 +46,7 @@ void GameLayer::processControls() {
 	if (controlShoot) {
 		Projectile* newProjectile = player->shoot();
 		if (newProjectile != NULL) {
+			space->addDynamicActor(newProjectile);
 			projectiles.push_back(newProjectile);
 		}
 	}
@@ -133,43 +138,11 @@ void GameLayer::keysToControls(SDL_Event event) {
 }
 
 void GameLayer::update() {
+	space->update();
 	background->update();
 	lifePoints->content = to_string(player->lives);
-	// Generar enemigos
-	newBasicEnemyTime--;
-	if (newBasicEnemyTime <= 0) {
-		int rX = (rand() % (600 - 500)) + 1 + 500;
-		int rY = (rand() % (300 - 60)) + 1 + 60;
-		enemies.push_back(new BasicEnemy(rX, rY, game));
-		newBasicEnemyTime = 120;
-	}
-	newSMovingEnemyTime--;
-	if (newSMovingEnemyTime <= 0) {
-		int rX = (rand() % (600 - 500)) + 1 + 500;
-		int rY = (rand() % (300 - 60)) + 1 + 60;
-		enemies.push_back(new SMovingEnemy(rX, rY, game));
-		newSMovingEnemyTime = 180;
-	}
-
-	//Generar PowerUps
-	if (newLifePowerUpTime > 0)	newLifePowerUpTime--;
-	if (newLifePowerUpTime <= 0 && player->lives < 3) {
-		int rX = (rand() % (600 - 500)) + 1 + 500;
-		int rY = (rand() % (300 - 60)) + 1 + 60;
-		powerUps.push_back(new LifesPowerUp(rX, rY, game));
-		newLifePowerUpTime = 1200;
-	}
-	if (newShootPowerUptime > 0) newShootPowerUptime--;
-	if (newShootPowerUptime <= 0 && player->numberOfShoots < 10) {
-		int rX = (rand() % (600 - 500)) + 1 + 500;
-		int rY = (rand() % (300 - 60)) + 1 + 60;
-		powerUps.push_back(new ShootPowerUp(rX, rY, game));
-		newShootPowerUptime = 600;
-	}
 
 	player->update();
-	textShoots->x = player->x;
-	textShoots->y = player->y + 20;
 	textShoots->content = to_string(player->numberOfShoots);
 	for (auto const& enemy : enemies) {
 		enemy->update();
@@ -217,7 +190,7 @@ void GameLayer::update() {
 	}
 
 	for (auto const& projectile : projectiles) {
-		if (projectile->isInRender() == false) {
+		if (projectile->isInRender(scrollX, scrollY) == false) {
 
 			bool pInList = std::find(deleteProjectiles.begin(),
 				deleteProjectiles.end(),
@@ -230,7 +203,7 @@ void GameLayer::update() {
 	}
 
 	for (auto const& powerUp : powerUps) {
-		if (powerUp->isInRender() == false && powerUp->x <= 0) {
+		if (powerUp->isInRender(scrollX, scrollY) == false && powerUp->x <= 0) {
 
 			bool pInList = std::find(deletePowerUps.begin(),
 				deletePowerUps.end(),
@@ -275,6 +248,7 @@ void GameLayer::update() {
 
 	for (auto const& delProjectile : deleteProjectiles) {
 		projectiles.remove(delProjectile);
+		space->removeDynamicActor(delProjectile);
 		delete delProjectile;
 	}
 	deleteProjectiles.clear();
@@ -288,27 +262,105 @@ void GameLayer::update() {
 }
 
 void GameLayer::draw() {
+	calculateScroll();
 	background->draw();
 
-	for (auto const& projectile : projectiles) {
-		projectile->draw();
+	for (auto const& tile : tiles) {
+		tile->draw(scrollX, scrollY);
 	}
 
-	player->draw();
+
+	for (auto const& projectile : projectiles) {
+		projectile->draw(scrollX, scrollY);
+	}
+
+	player->draw(scrollX, scrollY);
 
 	for (auto const& enemy : enemies) {
-		enemy->draw();
+		enemy->draw(scrollX, scrollY);
 	}
 
 	for (auto const& powerUp : powerUps) {
-		powerUp->draw();
+		powerUp->draw(scrollX, scrollY);
 	}
-	textPoints->draw();
-	lifePoints->draw();
-	textShoots->draw();
-	backgroundPoints->draw();
-	backgroundLives->draw();
+	textPoints->draw(scrollX, scrollY);
+	lifePoints->draw(scrollX, scrollY);
+	textShoots->draw(scrollX, scrollY);
+	backgroundPoints->draw(scrollX, scrollY);
+	backgroundLives->draw(scrollX, scrollY);
 
 	SDL_RenderPresent(game->renderer); // Renderiza
 }
 
+
+void GameLayer::loadMap(string name) {
+	char character;
+	string line;
+	ifstream streamFile(name.c_str());
+	if (!streamFile.is_open()) {
+		cout << "Falla abrir el fichero de mapa" << endl;
+		return;
+	}
+	else {
+		// Por línea
+		for (int i = 0; getline(streamFile, line); i++) {
+			istringstream streamLine(line);
+			mapWidth = line.length() * 40; // Ancho del mapa en pixels
+			// Por carácter (en cada línea)
+			for (int j = 0; !streamLine.eof(); j++) {
+				streamLine >> character; // Leer character 
+				cout << character;
+				float x = 40 / 2 + j * 40; // x central
+				float y = 32 + i * 32; // y suelo
+				loadMapObject(character, x, y);
+			}
+
+			cout << character << endl;
+		}
+	}
+	streamFile.close();
+}
+
+
+void GameLayer::loadMapObject(char character, float x, float y)
+{
+	switch (character) {
+	case '1': {
+		player = new Player(x, y, game);
+		// modificación para empezar a contar desde el suelo.
+		player->y = player->y - player->height / 2;
+		space->addDynamicActor(player);
+		break;
+	}
+	case '#': {
+		Tile* tile = new Tile("res/bloque_tierra.png", x, y, game);
+		// modificación para empezar a contar desde el suelo.
+		tile->y = tile->y - tile->height / 2;
+		tiles.push_back(tile);
+		// NO agregar al space - no debe colisionar
+		break;
+	}
+	case 'E': {
+		Enemy* enemy = new Enemy(x, y, game);
+		// modificación para empezar a contar desde el suelo.
+		enemy->y = enemy->y - enemy->height / 2;
+		enemies.push_back(enemy);
+		space->addDynamicActor(enemy);
+		break;
+	}
+	case 'L': {
+		//"Límite del mapa"
+		Tile* tile = new Tile("res/bloque_limite.png", x, y, game);
+		// modificación para empezar a contar desde el suelo.
+		tile->y = tile->y - tile->height / 2;
+		tiles.push_back(tile);
+		space->addStaticActor(tile);
+		break;
+		}
+	}
+}
+
+void GameLayer::calculateScroll() {
+	scrollX = player -> x - 240 ;
+	scrollY = player -> y - 140;
+}

@@ -15,6 +15,6 @@ void Enemy::update() {
 	vx = -1;
 }
 
-void Enemy::draw() {
-	animation->draw(x, y);
+void Enemy::draw(float scrollX, float scrollY) {
+	animation->draw(x - scrollX, y - scrollY);
 }
