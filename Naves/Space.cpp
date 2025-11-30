@@ -32,12 +32,56 @@ bool Space::hasCollision(Actor* actor) {
 	return false;
 }
 
+bool Space::checkCollisionDirection(Actor* actor, bool& collidesHorizontal, bool& collidesVertical) {
+	// Detectar si hay colisión y en qué dirección
+	collidesHorizontal = false;
+	collidesVertical = false;
+	bool hasAnyCollision = false;
+	
+	for (auto const& staticActor : staticActors) {
+		if (staticActor != nullptr && actor->isOverlap(staticActor)) {
+			hasAnyCollision = true;
+			
+			// Calcular centros
+			float actorCenterX = actor->x;
+			float actorCenterY = actor->y;
+			float staticCenterX = staticActor->x;
+			float staticCenterY = staticActor->y;
+			
+			// Calcular distancias en cada eje
+			float deltaX = abs(actorCenterX - staticCenterX);
+			float deltaY = abs(actorCenterY - staticCenterY);
+			
+			// Determinar qué tipo de colisión es más probable basándose en las distancias
+			// Si deltaX es mayor, probablemente colisiona horizontalmente
+			// Si deltaY es mayor, probablemente colisiona verticalmente
+			float minOverlapX = (actor->width + staticActor->width) / 2.0f;
+			float minOverlapY = (actor->height + staticActor->height) / 2.0f;
+			
+			float overlapX = minOverlapX - deltaX;
+			float overlapY = minOverlapY - deltaY;
+			
+			// La colisión es en la dirección con menor penetración
+			if (overlapX < overlapY) {
+				collidesHorizontal = true; // Colisión lateral (izq/der)
+			} else {
+				collidesVertical = true; // Colisión vertical (arriba/abajo)
+			}
+		}
+	}
+	
+	return hasAnyCollision;
+}
+
 void Space::update() {
 	for (auto const& actor : dynamicActors) {
-		actor->vy = actor->vy + gravity;
-		// máxima velocidad de caída por gravedad
-		if (actor->vy > 20) {
-			actor->vy = 20;
+		// Solo aplicar gravedad si es diferente de 0
+		if (gravity != 0) {
+			actor->vy = actor->vy + gravity;
+			// máxima velocidad de caída por gravedad
+			if (actor->vy > 20) {
+				actor->vy = 20;
+			}
 		}
 
 		// MoverDerecha / izquierda

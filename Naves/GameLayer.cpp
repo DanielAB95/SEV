@@ -186,7 +186,6 @@ void GameLayer::update() {
 		return; // Salir para evitar procesar el resto del frame
 	}
 	
-	space->update();
 	background->update();
 	
 	// Actualizar textos del HUD
@@ -196,7 +195,10 @@ void GameLayer::update() {
 
 	player->update();
 	
-	// Actualizar enemigos según su tipo
+	// Calcular scroll para usarlo en la lógica de enemigos
+	calculateScroll();
+	
+	// Actualizar enemigos según su tipo ANTES de space->update()
 	for (auto const& enemy : enemies) {
 		// Identificar tipo de enemigo y actualizar comportamiento
 		BasicEnemy* basicEnemy = dynamic_cast<BasicEnemy*>(enemy);
@@ -211,7 +213,8 @@ void GameLayer::update() {
 		
 		ShooterEnemy* shooterEnemy = dynamic_cast<ShooterEnemy*>(enemy);
 		if (shooterEnemy != nullptr) {
-			shooterEnemy->maintainDistance(player);
+			// Usar la versión con scroll para detectar visibilidad
+			shooterEnemy->maintainDistance(player, scrollX, scrollY);
 			// Intentar disparar
 			EnemyProjectile* enemyProj = shooterEnemy->shoot(player);
 			if (enemyProj != nullptr) {
@@ -221,6 +224,91 @@ void GameLayer::update() {
 		}
 		
 		enemy->update();
+	}
+	
+	// NUEVO: Procesar rebotes de proyectiles enemigos ANTES de space->update()
+	// Los proyectiles enemigos NO deben ser bloqueados por Space, deben rebotar
+	list<EnemyProjectile*> deleteEnemyProjectilesBounce;
+	
+	// Remover temporalmente proyectiles enemigos de Space para manejarlos manualmente
+	for (auto const& enemyProj : enemyProjectiles) {
+		space->removeDynamicActor(enemyProj);
+	}
+	
+	// IMPORTANTE: Actualizar space DESPUÉS de establecer las velocidades
+	space->update();
+	
+	// Ahora procesar proyectiles enemigos con rebotes
+	for (auto const& enemyProj : enemyProjectiles) {
+		// Guardar posición y velocidad anterior
+		float oldX = enemyProj->x;
+		float oldY = enemyProj->y;
+		float oldVx = enemyProj->vx;
+		float oldVy = enemyProj->vy;
+		
+		// Aplicar movimiento manualmente
+		float newX = oldX + enemyProj->vx;
+		float newY = oldY + enemyProj->vy;
+		
+		// Probar nueva posición
+		enemyProj->x = newX;
+		enemyProj->y = newY;
+		
+		bool collidesHorizontal = false;
+		bool collidesVertical = false;
+		
+		// Verificar si hay colisión en la nueva posición
+		if (space->checkCollisionDirection(enemyProj, collidesHorizontal, collidesVertical)) {
+			// Si alcanzó el máximo de rebotes, marcarlo para eliminar
+			if (enemyProj->currentBounces >= enemyProj->maxBounces) {
+				enemyProj->x = oldX;
+				enemyProj->y = oldY;
+				deleteEnemyProjectilesBounce.push_back(enemyProj);
+				cout << "Proyectil alcanzó máximo de rebotes (" << enemyProj->maxBounces << ") - Eliminando" << endl;
+			} else {
+				// Hacer rebotar según la dirección de colisión
+				bool didBounce = false;
+				
+				if (collidesHorizontal) {
+					enemyProj->bounce(true); // Rebote horizontal (invierte vx)
+					didBounce = true;
+				}
+				if (collidesVertical) {
+					enemyProj->bounce(false); // Rebote vertical (invierte vy)
+					didBounce = true;
+				}
+				
+				// Si rebotó en ambos ejes simultáneamente, el contador se incrementa dos veces
+				// Compensar para que solo cuente como un rebote
+				if (collidesHorizontal && collidesVertical && didBounce) {
+					enemyProj->currentBounces--;
+				}
+				
+				// Calcular nueva posición con velocidades invertidas
+				// Si colisiona en X, mantener Y original + movimiento en Y
+				// Si colisiona en Y, mantener X original + movimiento en X
+				if (collidesHorizontal && !collidesVertical) {
+					// Rebote horizontal: X vuelve a posición original, Y se mueve normalmente
+					enemyProj->x = oldX;
+					enemyProj->y = oldY + enemyProj->vy;
+				} else if (collidesVertical && !collidesHorizontal) {
+					// Rebote vertical: Y vuelve a posición original, X se mueve normalmente
+					enemyProj->x = oldX + enemyProj->vx;
+					enemyProj->y = oldY;
+				} else {
+					// Rebote en esquina: ambos ejes vuelven a posición original
+					enemyProj->x = oldX;
+					enemyProj->y = oldY;
+				}
+			}
+		}
+		// Si no hay colisión, la nueva posición ya está aplicada
+	}
+	
+	// Eliminar proyectiles que alcanzaron el límite de rebotes
+	for (auto const& delProj : deleteEnemyProjectilesBounce) {
+		enemyProjectiles.remove(delProj);
+		delete delProj;
 	}
 	
 	for (auto const& projectile : projectiles) {
@@ -346,17 +434,9 @@ void GameLayer::update() {
 		}
 	}
 	
-	// Eliminar proyectiles enemigos fuera de pantalla
-	for (auto const& enemyProj : enemyProjectiles) {
-		if (enemyProj->isInRender(scrollX, scrollY) == false) {
-			bool pInList = std::find(deleteEnemyProjectiles.begin(),
-				deleteEnemyProjectiles.end(),
-				enemyProj) != deleteEnemyProjectiles.end();
-			if (!pInList) {
-				deleteEnemyProjectiles.push_back(enemyProj);
-			}
-		}
-	}
+	// NOTA: Los proyectiles enemigos NO se eliminan cuando salen de pantalla
+	// Solo se eliminan al golpear al jugador o al alcanzar el máximo de rebotes (6)
+	// Ya no hay código aquí que los elimine por salir de pantalla
 
 	for (auto const& powerUp : powerUps) {
 		if (powerUp->isInRender(scrollX, scrollY) == false && powerUp->x <= 0) {
@@ -429,7 +509,6 @@ void GameLayer::update() {
 	// Eliminar proyectiles enemigos marcados
 	for (auto const& delEnemyProj : deleteEnemyProjectiles) {
 		enemyProjectiles.remove(delEnemyProj);
-		space->removeDynamicActor(delEnemyProj);
 		delete delEnemyProj;
 	}
 	deleteEnemyProjectiles.clear();
@@ -642,8 +721,10 @@ void GameLayer::loadMapObject(char character, float x, float y)
 }
 
 void GameLayer::calculateScroll() {
-	scrollX = player -> x - 240 ;
-	scrollY = player -> y - 140;
+	// Centrar el jugador en la pantalla
+	// Para 1280x720: centro X = 640, centro Y = 360
+	scrollX = player->x - WIDTH / 2;
+	scrollY = player->y - HEIGHT / 2;
 }
 
 float GameLayer::getLevelDuration(int level) {

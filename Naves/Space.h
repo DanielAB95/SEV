@@ -13,6 +13,7 @@ public:
 	void removeDynamicActor(Actor* actor);
 	void removeStaticActor(Actor* actor);
 	bool hasCollision(Actor* actor);
+	bool checkCollisionDirection(Actor* actor, bool& collidesHorizontal, bool& collidesVertical); // Detectar dirección de colisión
 	float gravity;
 	list<Actor*> dynamicActors;
 	list<Actor*> staticActors;

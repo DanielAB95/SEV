@@ -9,9 +9,11 @@ public:
 	ShooterEnemy(float x, float y, Game* game);
 	void update() override;
 	void maintainDistance(Player* player); // Mantener distancia del jugador
+	void maintainDistance(Player* player, float scrollX, float scrollY); // Versión con scroll
 	EnemyProjectile* shoot(Player* player); // Disparar al jugador
 	bool canShoot();
 	void resetShootTimer();
+	bool isVisibleOnScreen(float scrollX, float scrollY); // Verificar si está en pantalla
 	
 	float speed;
 	float minDistance; // Distancia mínima al jugador

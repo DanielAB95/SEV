@@ -20,4 +20,5 @@ public:
 	int fileWidth;
 	int fileHeight;
 	Game* game; // referencia al juego
+	bool affectedByGravity; // Indica si el actor es afectado por la gravedad
 };
