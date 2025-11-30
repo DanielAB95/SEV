@@ -21,21 +21,27 @@ void GameLayer::init() {
 	audioBackground->play();
 
 	points = 0;
-	textPoints = new Text("hola", WIDTH * 0.92, 
-		HEIGHT *0.05, game);
-	textPoints->content = to_string(points);
 	
-	// Textos para niveles y tiempo
-	textLevel = new Text("NIVEL: 1/5", WIDTH * 0.05, HEIGHT * 0.04, game);
-	textTime = new Text("TIEMPO: 30", WIDTH * 0.05, HEIGHT * 0.10, game);
+	// HUD superior derecha - PUNTOS (estrella + número) - Ajustado para verse completo
+	backgroundPoints = new Actor("res/icono_puntos.png", WIDTH * 0.88, HEIGHT * 0.06, 32, 32, game);
+	textPoints = new Text("0", WIDTH * 0.95, HEIGHT * 0.06, game);
+	
+	// HUD superior izquierda - NIVEL Y TIEMPO - Separado del borde
+	textLevel = new Text("NIVEL: 1/5", WIDTH * 0.15, HEIGHT * 0.06, game);
+	textTime = new Text("TIEMPO: 30", WIDTH * 0.15, HEIGHT * 0.13, game);
+	
+	// HUD inferior izquierda - VIDAS (corazón + número) - Tamaño correcto 44x36
+	backgroundLives = new Actor("res/corazon.png", WIDTH * 0.07, HEIGHT * 0.93, 44, 36, game);
+	lifePoints = new Text("0", WIDTH * 0.14, HEIGHT * 0.93, game);
+	
+	// HUD inferior centro-izquierda - DINERO (moneda + número) - Mejor espaciado
+	backgroundMoney = new Actor("res/icono_moneda.png", WIDTH * 0.26, HEIGHT * 0.93, 28, 28, game);
+	textMoney = new Text("0", WIDTH * 0.33, HEIGHT * 0.93, game);
+	
+	// HUD inferior derecha - DISPAROS - Ajustado para no salirse
+	textShoots = new Text("Disparos: 0", WIDTH * 0.78, HEIGHT * 0.93, game);
 
 	background = new Background("res/fondo.png", WIDTH * 0.5, HEIGHT * 0.5, -1, game);
-	backgroundPoints = new Actor("res/icono_puntos.png", WIDTH * 0.85,
-		HEIGHT * 0.05, 24, 24, game);
-	backgroundLives = new Actor("res/corazon.png", WIDTH * 0.08,
-		HEIGHT * 0.06, 44, 36, game);
-	backgroundMoney = new Actor("res/icono_moneda.png", WIDTH * 0.08,
-		HEIGHT * 0.12, 32, 32, game);
 	
 	projectiles.clear(); // Vaciar por si reiniciamos el juego
 	powerUps.clear();
@@ -52,12 +58,11 @@ void GameLayer::init() {
 
 	loadMap("res/0.txt");  // ← player se crea aquí
 
-	lifePoints = new Text("adios", WIDTH * 0.15,
-		HEIGHT * 0.05, game);
+	// Actualizar los textos con los valores iniciales del jugador
 	lifePoints->content = to_string(player->lives);
-	textShoots = new Text("0", player-> x+100, player->y + 15, game);
-	textMoney = new Text("0", WIDTH * 0.15, HEIGHT * 0.11, game);
 	textMoney->content = to_string(player->money);
+	textShoots->content = "Disparos: " + to_string(player->numberOfShoots);
+	textPoints->content = to_string(points);
 	
 	// Actualizar texto de nivel
 	textLevel->content = "NIVEL: " + to_string(currentLevel) + "/" + to_string(totalLevels);
@@ -183,11 +188,13 @@ void GameLayer::update() {
 	
 	space->update();
 	background->update();
+	
+	// Actualizar textos del HUD
 	lifePoints->content = to_string(player->lives);
-	textMoney->content = to_string(player->money); // Actualizar dinero
+	textMoney->content = to_string(player->money);
+	textShoots->content = "Disparos: " + to_string(player->numberOfShoots);
 
 	player->update();
-	textShoots->content = to_string(player->numberOfShoots);
 	
 	// Actualizar enemigos según su tipo
 	for (auto const& enemy : enemies) {
@@ -470,16 +477,17 @@ void GameLayer::draw() {
 	// 7. JUGADOR (encima de enemigos)
 	player->draw(scrollX, scrollY);
 	
-	// 8. HUD (siempre visible encima de todo)
-	backgroundPoints->draw(scrollX, scrollY);
-	backgroundLives->draw(scrollX, scrollY);
-	backgroundMoney->draw(scrollX, scrollY);
-	textPoints->draw(scrollX, scrollY);
-	lifePoints->draw(scrollX, scrollY);
-	textShoots->draw(scrollX, scrollY);
-	textMoney->draw(scrollX, scrollY);
-	textLevel->draw(scrollX, scrollY);
-	textTime->draw(scrollX, scrollY);
+	// 8. HUD (siempre visible encima de todo, sin scroll)
+	// Los elementos del HUD se dibujan sin scroll para que permanezcan fijos en pantalla
+	backgroundPoints->draw(0, 0);
+	backgroundLives->draw(0, 0);
+	backgroundMoney->draw(0, 0);
+	textPoints->draw(0, 0);
+	lifePoints->draw(0, 0);
+	textShoots->draw(0, 0);
+	textMoney->draw(0, 0);
+	textLevel->draw(0, 0);
+	textTime->draw(0, 0);
 
 	SDL_RenderPresent(game->renderer); // Renderiza
 }
