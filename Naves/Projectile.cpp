@@ -6,5 +6,6 @@ Projectile::Projectile(float x, float y, Game* game) :
 }
 
 void Projectile::update() {
-	x = x + vx;
+	// El movimiento lo maneja Space::update() mediante vx
+	// No actualizar x aquí para evitar doble movimiento
 }

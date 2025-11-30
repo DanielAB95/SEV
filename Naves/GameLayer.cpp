@@ -3,6 +3,13 @@
 GameLayer::GameLayer(Game* game)
 	: Layer(game) {
 	//llama al constructor del padre : Layer(renderer)
+	
+	// Inicializar sistema de niveles
+	currentLevel = 1;
+	totalLevels = 5;
+	levelTime = 0.0f;
+	levelCompleted = false;
+	
 	init();
 }
 
@@ -17,15 +24,31 @@ void GameLayer::init() {
 	textPoints = new Text("hola", WIDTH * 0.92, 
 		HEIGHT *0.05, game);
 	textPoints->content = to_string(points);
+	
+	// Textos para niveles y tiempo
+	textLevel = new Text("NIVEL: 1/5", WIDTH * 0.05, HEIGHT * 0.04, game);
+	textTime = new Text("TIEMPO: 30", WIDTH * 0.05, HEIGHT * 0.10, game);
 
 	background = new Background("res/fondo.png", WIDTH * 0.5, HEIGHT * 0.5, -1, game);
 	backgroundPoints = new Actor("res/icono_puntos.png", WIDTH * 0.85,
 		HEIGHT * 0.05, 24, 24, game);
 	backgroundLives = new Actor("res/corazon.png", WIDTH * 0.08,
 		HEIGHT * 0.06, 44, 36, game);
+	backgroundMoney = new Actor("res/icono_moneda.png", WIDTH * 0.08,
+		HEIGHT * 0.12, 32, 32, game);
+	
 	projectiles.clear(); // Vaciar por si reiniciamos el juego
 	powerUps.clear();
 	enemies.clear(); // Vaciar por si reiniciamos el juego
+	lifeSpawners.clear(); // Vaciar spawners
+	enemySpawners.clear(); // Vaciar spawners de enemigos
+	enemyProjectiles.clear(); // Vaciar proyectiles enemigos
+	
+	// Reiniciar el sistema de niveles
+	currentLevel = 1;
+	levelTime = 0.0f;
+	levelCompleted = false;
+	levelDuration = getLevelDuration(currentLevel);
 
 	loadMap("res/0.txt");  // ← player se crea aquí
 
@@ -33,6 +56,11 @@ void GameLayer::init() {
 		HEIGHT * 0.05, game);
 	lifePoints->content = to_string(player->lives);
 	textShoots = new Text("0", player-> x+100, player->y + 15, game);
+	textMoney = new Text("0", WIDTH * 0.15, HEIGHT * 0.11, game);
+	textMoney->content = to_string(player->money);
+	
+	// Actualizar texto de nivel
+	textLevel->content = "NIVEL: " + to_string(currentLevel) + "/" + to_string(totalLevels);
 }
 
 void GameLayer::processControls() {
@@ -138,20 +166,110 @@ void GameLayer::keysToControls(SDL_Event event) {
 }
 
 void GameLayer::update() {
+	// Actualizar el tiempo del nivel
+	levelTime += 0.033f; // Aproximadamente 30 FPS (1/30 = 0.033)
+	
+	// Actualizar texto de tiempo
+	float timeRemaining = levelDuration - levelTime;
+	if (timeRemaining < 0) timeRemaining = 0;
+	textTime->content = "TIEMPO: " + to_string((int)timeRemaining);
+	
+	// Verificar si se completó el nivel (tiempo cumplido y jugador vivo)
+	if (!levelCompleted && levelTime >= levelDuration) {
+		levelCompleted = true;
+		nextLevel();
+		return; // Salir para evitar procesar el resto del frame
+	}
+	
 	space->update();
 	background->update();
 	lifePoints->content = to_string(player->lives);
+	textMoney->content = to_string(player->money); // Actualizar dinero
 
 	player->update();
 	textShoots->content = to_string(player->numberOfShoots);
+	
+	// Actualizar enemigos según su tipo
 	for (auto const& enemy : enemies) {
+		// Identificar tipo de enemigo y actualizar comportamiento
+		BasicEnemy* basicEnemy = dynamic_cast<BasicEnemy*>(enemy);
+		if (basicEnemy != nullptr) {
+			basicEnemy->moveTowardsPlayer(player);
+		}
+		
+		ChargeEnemy* chargeEnemy = dynamic_cast<ChargeEnemy*>(enemy);
+		if (chargeEnemy != nullptr) {
+			chargeEnemy->checkAndCharge(player);
+		}
+		
+		ShooterEnemy* shooterEnemy = dynamic_cast<ShooterEnemy*>(enemy);
+		if (shooterEnemy != nullptr) {
+			shooterEnemy->maintainDistance(player);
+			// Intentar disparar
+			EnemyProjectile* enemyProj = shooterEnemy->shoot(player);
+			if (enemyProj != nullptr) {
+				enemyProjectiles.push_back(enemyProj);
+				space->addDynamicActor(enemyProj);
+			}
+		}
+		
 		enemy->update();
 	}
+	
 	for (auto const& projectile : projectiles) {
 		projectile->update();
 	}
+	
+	for (auto const& enemyProj : enemyProjectiles) {
+		enemyProj->update();
+	}
+	
 	for (auto const& powerUp : powerUps) {
 		powerUp->update();
+	}
+	
+	// Actualizar spawners y generar vidas
+	for (auto const& spawner : lifeSpawners) {
+		spawner->update();
+		if (spawner->shouldSpawn()) {
+			// Crear un power-up de vida en la posición del spawner
+			LifesPowerUp* lifePowerUp = new LifesPowerUp(spawner->x, spawner->y, game);
+			powerUps.push_back(lifePowerUp);
+			space->addDynamicActor(lifePowerUp);
+			spawner->resetTimer();
+			cout << "Spawner generó un corazón en posición (" << spawner->x << ", " << spawner->y << ")" << endl;
+		}
+	}
+	
+	// Actualizar spawners de enemigos y generar enemigos
+	for (auto const& spawner : enemySpawners) {
+		spawner->update();
+		if (spawner->shouldSpawn()) {
+			Enemy* newEnemy = nullptr;
+			
+			// Crear el tipo de enemigo correspondiente
+			if (spawner->enemyType == "B") {
+				BasicEnemy* basicEnemy = new BasicEnemy(spawner->x, spawner->y, game);
+				newEnemy = basicEnemy;
+			}
+			else if (spawner->enemyType == "R") {
+				ChargeEnemy* chargeEnemy = new ChargeEnemy(spawner->x, spawner->y, game);
+				newEnemy = chargeEnemy;
+			}
+			else if (spawner->enemyType == "T") {
+				ShooterEnemy* shooterEnemy = new ShooterEnemy(spawner->x, spawner->y, game);
+				newEnemy = shooterEnemy;
+			}
+			
+			if (newEnemy != nullptr) {
+				enemies.push_back(newEnemy);
+				space->addDynamicActor(newEnemy);
+				spawner->currentEnemies++;
+				spawner->resetTimer();
+				cout << "Spawner generó enemigo tipo " << spawner->enemyType 
+				     << " en posición (" << spawner->x << ", " << spawner->y << ")" << endl;
+			}
+		}
 	}
 
 	// Colisiones , Enemy - Projectile, Player - PowerUp
@@ -159,6 +277,7 @@ void GameLayer::update() {
 	list<Enemy*> deleteEnemies;
 	list<Projectile*> deleteProjectiles;
 	list<PowerUp*> deletePowerUps;
+	list<EnemyProjectile*> deleteEnemyProjectiles;
 
 	// Colisiones
 	for (auto const& enemy : enemies) {
@@ -176,9 +295,27 @@ void GameLayer::update() {
 			}
 		}
 	}
+	
+	// Colisión proyectiles enemigos con jugador
+	for (auto const& enemyProj : enemyProjectiles) {
+		if (player->isOverlap(enemyProj)) {
+			player->lives--;
+			bool pInList = std::find(deleteEnemyProjectiles.begin(),
+				deleteEnemyProjectiles.end(),
+				enemyProj) != deleteEnemyProjectiles.end();
+			if (!pInList) {
+				deleteEnemyProjectiles.push_back(enemyProj);
+			}
+			if (player->lives == 0) {
+				init();
+				return;
+			}
+		}
+	}
 
 	for (auto const& powerUp : powerUps) {
 		if (player->isOverlap(powerUp)) {
+			cout << "¡Colision con power-up detectada!" << endl;
 			powerUp->effect(player);
 			bool pInList = std::find(deletePowerUps.begin(),
 				deletePowerUps.end(),
@@ -198,6 +335,18 @@ void GameLayer::update() {
 
 			if (!pInList) {
 				deleteProjectiles.push_back(projectile);
+			}
+		}
+	}
+	
+	// Eliminar proyectiles enemigos fuera de pantalla
+	for (auto const& enemyProj : enemyProjectiles) {
+		if (enemyProj->isInRender(scrollX, scrollY) == false) {
+			bool pInList = std::find(deleteEnemyProjectiles.begin(),
+				deleteEnemyProjectiles.end(),
+				enemyProj) != deleteEnemyProjectiles.end();
+			if (!pInList) {
+				deleteEnemyProjectiles.push_back(enemyProj);
 			}
 		}
 	}
@@ -232,6 +381,10 @@ void GameLayer::update() {
 						enemy) != deleteEnemies.end();
 					if (!eInList) {
 						deleteEnemies.push_back(enemy);
+						// Crear moneda cuando muere el enemigo
+						CoinPowerUp* coin = new CoinPowerUp(enemy->x, enemy->y, game);
+						powerUps.push_back(coin);
+						space->addDynamicActor(coin);
 					}
 					player->numberOfShoots++;
 					points++;
@@ -242,6 +395,12 @@ void GameLayer::update() {
 	}
 
 	for (auto const& delEnemy : deleteEnemies) {
+		// Actualizar contadores de spawners
+		for (auto const& spawner : enemySpawners) {
+			if (spawner->currentEnemies > 0) {
+				spawner->currentEnemies--;
+			}
+		}
 		enemies.remove(delEnemy);
 	}
 	deleteEnemies.clear();
@@ -255,39 +414,72 @@ void GameLayer::update() {
 
 	for (auto const& delPowerUp : deletePowerUps) {
 		powerUps.remove(delPowerUp);
+		space->removeDynamicActor(delPowerUp);
+		delete delPowerUp;
 	}
 	deletePowerUps.clear();
+	
+	// Eliminar proyectiles enemigos marcados
+	for (auto const& delEnemyProj : deleteEnemyProjectiles) {
+		enemyProjectiles.remove(delEnemyProj);
+		space->removeDynamicActor(delEnemyProj);
+		delete delEnemyProj;
+	}
+	deleteEnemyProjectiles.clear();
 
 	std::cout << "update GameLayer" << endl;
 }
 
 void GameLayer::draw() {
 	calculateScroll();
+	
+	// 1. FONDO (más atrás)
 	background->draw();
 
+	// 2. TILES/SUELO
 	for (auto const& tile : tiles) {
 		tile->draw(scrollX, scrollY);
 	}
 
+	// 3. SPAWNERS (debajo de enemigos para que no los tapen)
+	for (auto const& spawner : lifeSpawners) {
+		spawner->draw(scrollX, scrollY);
+	}
+	for (auto const& spawner : enemySpawners) {
+		spawner->draw(scrollX, scrollY);
+	}
 
+	// 4. POWER-UPS (en el suelo)
+	for (auto const& powerUp : powerUps) {
+		powerUp->draw(scrollX, scrollY);
+	}
+
+	// 5. PROYECTILES (sobre el suelo, debajo de personajes)
 	for (auto const& projectile : projectiles) {
 		projectile->draw(scrollX, scrollY);
 	}
+	for (auto const& enemyProj : enemyProjectiles) {
+		enemyProj->draw(scrollX, scrollY);
+	}
 
-	player->draw(scrollX, scrollY);
-
+	// 6. ENEMIGOS (encima de spawners y proyectiles)
 	for (auto const& enemy : enemies) {
 		enemy->draw(scrollX, scrollY);
 	}
 
-	for (auto const& powerUp : powerUps) {
-		powerUp->draw(scrollX, scrollY);
-	}
+	// 7. JUGADOR (encima de enemigos)
+	player->draw(scrollX, scrollY);
+	
+	// 8. HUD (siempre visible encima de todo)
+	backgroundPoints->draw(scrollX, scrollY);
+	backgroundLives->draw(scrollX, scrollY);
+	backgroundMoney->draw(scrollX, scrollY);
 	textPoints->draw(scrollX, scrollY);
 	lifePoints->draw(scrollX, scrollY);
 	textShoots->draw(scrollX, scrollY);
-	backgroundPoints->draw(scrollX, scrollY);
-	backgroundLives->draw(scrollX, scrollY);
+	textMoney->draw(scrollX, scrollY);
+	textLevel->draw(scrollX, scrollY);
+	textTime->draw(scrollX, scrollY);
 
 	SDL_RenderPresent(game->renderer); // Renderiza
 }
@@ -348,6 +540,30 @@ void GameLayer::loadMapObject(char character, float x, float y)
 		space->addDynamicActor(enemy);
 		break;
 	}
+	case 'B': {
+		// BasicEnemy - Persigue al jugador directamente
+		BasicEnemy* basicEnemy = new BasicEnemy(x, y, game);
+		basicEnemy->y = basicEnemy->y - basicEnemy->height / 2;
+		enemies.push_back(basicEnemy);
+		space->addDynamicActor(basicEnemy);
+		break;
+	}
+	case 'R': {
+		// ChargeEnemy - Embiste cuando está alineado (R = Ram/Ramming)
+		ChargeEnemy* chargeEnemy = new ChargeEnemy(x, y, game);
+		chargeEnemy->y = chargeEnemy->y - chargeEnemy->height / 2;
+		enemies.push_back(chargeEnemy);
+		space->addDynamicActor(chargeEnemy);
+		break;
+	}
+	case 'T': {
+		// ShooterEnemy - Dispara desde la distancia (T = Turret/Tirador)
+		ShooterEnemy* shooterEnemy = new ShooterEnemy(x, y, game);
+		shooterEnemy->y = shooterEnemy->y - shooterEnemy->height / 2;
+		enemies.push_back(shooterEnemy);
+		space->addDynamicActor(shooterEnemy);
+		break;
+	}
 	case 'L': {
 		//"Límite del mapa"
 		Tile* tile = new Tile("res/bloque_limite.png", x, y, game);
@@ -356,11 +572,160 @@ void GameLayer::loadMapObject(char character, float x, float y)
 		tiles.push_back(tile);
 		space->addStaticActor(tile);
 		break;
-		}
+	}
+	case 'H': {
+		// Power-up de vida (Heart)
+		LifesPowerUp* lifePowerUp = new LifesPowerUp(x, y, game);
+		lifePowerUp->y = lifePowerUp->y - lifePowerUp->height / 2;
+		powerUps.push_back(lifePowerUp);
+		space->addDynamicActor(lifePowerUp);
+		break;
+	}
+	case 'S': {
+		// Power-up de disparos (Shoots)
+		ShootPowerUp* shootPowerUp = new ShootPowerUp(x, y, game);
+		shootPowerUp->y = shootPowerUp->y - shootPowerUp->height / 2;
+		powerUps.push_back(shootPowerUp);
+		space->addDynamicActor(shootPowerUp);
+		break;
+	}
+	case 'C': {
+		// Power-up de moneda (Coin)
+		CoinPowerUp* coin = new CoinPowerUp(x, y, game);
+		coin->y = coin->y - coin->height / 2;
+		powerUps.push_back(coin);
+		space->addDynamicActor(coin);
+		break;
+	}
+	case 'V': {
+		// Spawner de vidas (V = Vida spawner)
+		LifeSpawner* spawner = new LifeSpawner(x, y, game);
+		spawner->y = spawner->y - spawner->height / 2;
+		lifeSpawners.push_back(spawner);
+		// NO añadir al space - los spawners no colisionan
+		cout << "Spawner de vida creado en (" << x << ", " << y << ")" << endl;
+		break;
+	}
+	case 'b': {
+		// Spawner de BasicEnemy (minúscula 'b')
+		EnemySpawner* spawner = new EnemySpawner(x, y, "B", game);
+		spawner->y = spawner->y - spawner->height / 2;
+		enemySpawners.push_back(spawner);
+		cout << "Spawner de BasicEnemy creado en (" << x << ", " << y << ")" << endl;
+		break;
+	}
+	case 'r': {
+		// Spawner de ChargeEnemy (minúscula 'r')
+		EnemySpawner* spawner = new EnemySpawner(x, y, "R", game);
+		spawner->y = spawner->y - spawner->height / 2;
+		enemySpawners.push_back(spawner);
+		cout << "Spawner de ChargeEnemy creado en (" << x << ", " << y << ")" << endl;
+		break;
+	}
+	case 't': {
+		// Spawner de ShooterEnemy (minúscula 't')
+		EnemySpawner* spawner = new EnemySpawner(x, y, "T", game);
+		spawner->y = spawner->y - spawner->height / 2;
+		enemySpawners.push_back(spawner);
+		cout << "Spawner de ShooterEnemy creado en (" << x << ", " << y << ")" << endl;
+		break;
+	}
 	}
 }
 
 void GameLayer::calculateScroll() {
 	scrollX = player -> x - 240 ;
 	scrollY = player -> y - 140;
+}
+
+float GameLayer::getLevelDuration(int level) {
+	switch(level) {
+		case 1: return 30.0f;  // 30 segundos
+		case 2: return 45.0f;  // 45 segundos
+		case 3: return 60.0f;  // 60 segundos
+		case 4: return 75.0f;  // 75 segundos
+		case 5: return 90.0f;  // 90 segundos
+		default: return 60.0f;
+	}
+}
+
+void GameLayer::loadLevel(int level) {
+	currentLevel = level;
+	levelTime = 0.0f;
+	levelCompleted = false;
+	levelDuration = getLevelDuration(level);
+	
+	// Limpiar nivel anterior
+	clearLevel();
+	
+	// Cargar el mapa correspondiente al nivel
+	string mapName = "res/" + to_string(level - 1) + ".txt";
+	loadMap(mapName);
+	
+	// Actualizar texto de nivel
+	textLevel->content = "NIVEL: " + to_string(currentLevel) + "/" + to_string(totalLevels);
+	
+	cout << "Nivel " << currentLevel << " cargado. Duracion: " << levelDuration << " segundos." << endl;
+}
+
+void GameLayer::clearLevel() {
+	// Limpiar enemigos
+	for (auto const& enemy : enemies) {
+		space->removeDynamicActor(enemy);
+		delete enemy;
+	}
+	enemies.clear();
+	
+	// Limpiar proyectiles
+	for (auto const& projectile : projectiles) {
+		space->removeDynamicActor(projectile);
+		delete projectile;
+	}
+	projectiles.clear();
+	
+	// Limpiar proyectiles enemigos
+	for (auto const& enemyProj : enemyProjectiles) {
+		space->removeDynamicActor(enemyProj);
+		delete enemyProj;
+	}
+	enemyProjectiles.clear();
+	
+	// Limpiar power-ups
+	for (auto const& powerUp : powerUps) {
+		space->removeDynamicActor(powerUp);
+		delete powerUp;
+	}
+	powerUps.clear();
+	
+	// Limpiar spawners
+	for (auto const& spawner : lifeSpawners) {
+		delete spawner;
+	}
+	lifeSpawners.clear();
+	
+	// Limpiar spawners de enemigos
+	for (auto const& spawner : enemySpawners) {
+		delete spawner;
+	}
+	enemySpawners.clear();
+	
+	// Limpiar tiles
+	for (auto const& tile : tiles) {
+		space->removeStaticActor(tile);
+		delete tile;
+	}
+	tiles.clear();
+}
+
+void GameLayer::nextLevel() {
+	if (currentLevel < totalLevels) {
+		currentLevel++;
+		loadLevel(currentLevel);
+		cout << "¡Nivel completado! Pasando al nivel " << currentLevel << endl;
+	} else {
+		// Juego completado
+		cout << "¡Has completado todos los niveles!" << endl;
+		// Puedes reiniciar el juego o mostrar pantalla de victoria
+		init();
+	}
 }

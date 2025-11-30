@@ -78,12 +78,6 @@
     <ClCompile Include="ShootPowerUp.cpp">
       <Filter>Archivos de origen\Actores</Filter>
     </ClCompile>
-    <ClCompile Include="DestructibleTile.cpp">
-      <Filter>Archivos de origen</Filter>
-    </ClCompile>
-    <ClCompile Include="CollectibleItem.cpp">
-      <Filter>Archivos de origen</Filter>
-    </ClCompile>
     <ClCompile Include="Checkpoint.cpp">
       <Filter>Archivos de origen</Filter>
     </ClCompile>
@@ -92,6 +86,30 @@
     </ClCompile>
     <ClCompile Include="Space.cpp">
       <Filter>Archivos de origen\Actores</Filter>
+    </ClCompile>
+    <ClCompile Include="CoinPowerUp.cpp">
+      <Filter>Archivos de origen\Actores</Filter>
+    </ClCompile>
+    <ClCompile Include="DestructibleTile.cpp">
+      <Filter>Archivos de origen\Actores</Filter>
+    </ClCompile>
+    <ClCompile Include="CollectibleItem.cpp">
+      <Filter>Archivos de origen\Actores</Filter>
+    </ClCompile>
+    <ClCompile Include="ChargeEnemy.cpp">
+      <Filter>Archivos de origen\Actores</Filter>
+    </ClCompile>
+    <ClCompile Include="EnemyProjectile.cpp">
+      <Filter>Archivos de origen\Actores</Filter>
+    </ClCompile>
+    <ClCompile Include="LifeSpawner.cpp">
+      <Filter>Archivos de origen\Actores</Filter>
+    </ClCompile>
+    <ClCompile Include="ShooterEnemy.cpp">
+      <Filter>Archivos de origen\Actores</Filter>
+    </ClCompile>
+    <ClCompile Include="EnemySpawner.cpp">
+      <Filter>Archivos de origen</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -143,12 +161,6 @@
     <ClInclude Include="ShootPowerUp.h">
       <Filter>Archivos de encabezado\Actores</Filter>
     </ClInclude>
-    <ClInclude Include="DestructibleTile.h">
-      <Filter>Archivos de encabezado</Filter>
-    </ClInclude>
-    <ClInclude Include="CollectibleItem.h">
-      <Filter>Archivos de encabezado</Filter>
-    </ClInclude>
     <ClInclude Include="Checkpoint.h">
       <Filter>Archivos de encabezado</Filter>
     </ClInclude>
@@ -157,6 +169,30 @@
     </ClInclude>
     <ClInclude Include="Space.h">
       <Filter>Archivos de encabezado\Actores</Filter>
+    </ClInclude>
+    <ClInclude Include="CollectibleItem.h">
+      <Filter>Archivos de encabezado\Actores</Filter>
+    </ClInclude>
+    <ClInclude Include="DestructibleTile.h">
+      <Filter>Archivos de encabezado\Actores</Filter>
+    </ClInclude>
+    <ClInclude Include="CoinPowerUp.h">
+      <Filter>Archivos de encabezado\Actores</Filter>
+    </ClInclude>
+    <ClInclude Include="ChargeEnemy.h">
+      <Filter>Archivos de encabezado\Actores</Filter>
+    </ClInclude>
+    <ClInclude Include="EnemyProjectile.h">
+      <Filter>Archivos de encabezado\Actores</Filter>
+    </ClInclude>
+    <ClInclude Include="LifeSpawner.h">
+      <Filter>Archivos de encabezado\Actores</Filter>
+    </ClInclude>
+    <ClInclude Include="ShooterEnemy.h">
+      <Filter>Archivos de encabezado\Actores</Filter>
+    </ClInclude>
+    <ClInclude Include="EnemySpawner.h">
+      <Filter>Archivos de encabezado</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

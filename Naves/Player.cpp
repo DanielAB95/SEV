@@ -5,6 +5,7 @@ Player::Player(float x, float y, Game* game)
 
 	audioShoot = Audio::createAudio("res/efecto_disparo.wav", false);
 	lives = 3;
+	money = 0; // Inicializar dinero
 
 	aMoving = new Animation("res/enemigo_movimiento.png", width, height,
 		108, 40, 6, 3, game);

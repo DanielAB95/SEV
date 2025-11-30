@@ -21,4 +21,5 @@ public:
 	int shootTime = 0;
 	int numberOfShoots = 20;
 	int lives;
+	int money; // Dinero recolectado
 };

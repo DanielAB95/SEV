@@ -3,7 +3,8 @@
 Enemy::Enemy(float x, float y, Game* game)
 	: Actor("res/enemigo.png", x, y, 36, 40, game) {
 
-	vx = 1;
+	vx = -1;
+	lives = 1; // Inicializar vidas del enemigo
 
 	aMoving = new Animation("res/enemigo_movimiento.png", width, height,
 		108, 40, 6, 3, game);
@@ -12,7 +13,9 @@ Enemy::Enemy(float x, float y, Game* game)
 }
 
 void Enemy::update() {
-	vx = -1;
+	animation->update();
+	// El movimiento lo maneja Space::update()
+	// vx ya está establecido en -1
 }
 
 void Enemy::draw(float scrollX, float scrollY) {
