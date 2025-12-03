@@ -1,5 +1,6 @@
 #include "Game.h"
 #include "GameLayer.h"
+#include "InicioLayer.h"
 
 Game::Game() {
 	if (SDL_Init(SDL_INIT_EVERYTHING) < 0) {
@@ -13,7 +14,9 @@ Game::Game() {
 	// https://wiki.libsdl.org/SDL_HINT_RENDER_SCALE_QUALITY
 	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1");
 
+	inicioLayer = new InicioLayer(this);
 	gameLayer = new GameLayer(this);
+	layer = inicioLayer;
 
 	// fuentes
 	TTF_Init();
@@ -31,11 +34,11 @@ void Game::loop() {
 		initTick = SDL_GetTicks();
 
 		// Controles
-		gameLayer->processControls();
+		layer->processControls();
 		// Actualizar elementos
-		gameLayer->update();
+		layer->update();
 		// Dibujar
-		gameLayer->draw();
+		layer->draw();
 
 		endTick = SDL_GetTicks();
 		differenceTick = endTick - initTick;

@@ -30,5 +30,7 @@ public:
 	SDL_Window* window; // ventana
 	SDL_Renderer* renderer; // renderizador
 	bool loopActive; // Juego activo
+	Layer* layer;
 	Layer* gameLayer;
+	Layer* inicioLayer;
 };

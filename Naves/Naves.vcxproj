@@ -166,6 +166,8 @@
     <ClCompile Include="EnemySpawner.cpp" />
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="GameLayer.cpp" />
+    <ClCompile Include="GameOverLayer.cpp" />
+    <ClCompile Include="InicioLayer.cpp" />
     <ClCompile Include="Layer.cpp" />
     <ClCompile Include="LifeSpawner.cpp" />
     <ClCompile Include="LifesPowerUp.cpp" />
@@ -196,6 +198,8 @@
     <ClInclude Include="EnemySpawner.h" />
     <ClInclude Include="Game.h" />
     <ClInclude Include="GameLayer.h" />
+    <ClInclude Include="GameOverLayer.h" />
+    <ClInclude Include="InicioLayer.h" />
     <ClInclude Include="Layer.h" />
     <ClInclude Include="LifeSpawner.h" />
     <ClInclude Include="LifesPowerUp.h" />
