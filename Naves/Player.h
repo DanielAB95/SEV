@@ -9,7 +9,7 @@ class Player : public Actor
 {
 public:
 	Player(float x, float y, Game* game);
-	Projectile* shoot();
+	Projectile* shoot(Enemy* target);
 	void update();
 	void moveX(float axis);
 	void moveY(float axis);

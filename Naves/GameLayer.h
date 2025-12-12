@@ -49,6 +49,8 @@ public:
 	void nextLevel();
 	float getLevelDuration(int level);
 	void clearLevel();
+
+	Enemy* closestEnemy();
 	
 	Space* space;
 	float scrollX;

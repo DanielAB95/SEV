@@ -77,7 +77,7 @@ void GameLayer::processControls() {
 	// procesar controles
 	// Disparar
 	if (controlShoot) {
-		Projectile* newProjectile = player->shoot();
+		Projectile* newProjectile = player->shoot(closestEnemy());
 		if (newProjectile != NULL) {
 			space->addDynamicActor(newProjectile);
 			projectiles.push_back(newProjectile);
@@ -311,12 +311,12 @@ void GameLayer::update() {
 		delete delProj;
 	}
 	
-	for (auto const& projectile : projectiles) {
-		projectile->update();
-	}
-	
 	for (auto const& enemyProj : enemyProjectiles) {
 		enemyProj->update();
+	}
+
+	for (auto const& projectile : projectiles) {
+		projectile->update();
 	}
 	
 	for (auto const& powerUp : powerUps) {
@@ -908,4 +908,26 @@ void GameLayer::nextLevel() {
 		// Puedes reiniciar el juego o mostrar pantalla de victoria
 		game->layer = game->inicioLayer;
 	}
+}
+
+Enemy* GameLayer::closestEnemy() {
+	if (enemies.empty()) return NULL;  // No hay enemigos
+
+	Enemy* closest = NULL;
+	float minDistanceSq = std::numeric_limits<float>::max(); // mejor usar distancia al cuadrado para eficiencia
+	float playerX = player->x;
+	float playerY = player->y;
+
+	for (auto const& enemy : enemies) {
+		float dx = enemy->x - playerX;
+		float dy = enemy->y - playerY;
+		float distSq = dx * dx + dy * dy; // distancia al cuadrado
+
+		if (distSq < minDistanceSq) {
+			minDistanceSq = distSq;
+			closest = enemy;
+		}
+	}
+
+	return closest;
 }

@@ -22,12 +22,13 @@ void Player::update() {
 	// y = y + vy;
 }
 
-Projectile* Player::shoot() {
+Projectile* Player::shoot(Enemy* target) {
+	if (target == NULL) return NULL;
 	if (shootTime == 0 && numberOfShoots > 0) {
 		audioShoot->play();
 		shootTime = shootCadence;
 		numberOfShoots--;
-		return new Projectile(x, y, game);
+		return new Projectile(target->x, target->y, x, y, game);
 	}
 	else {
 		return NULL;

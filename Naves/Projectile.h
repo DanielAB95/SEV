@@ -1,10 +1,13 @@
 #pragma once
 
 #include "Actor.h"
+#include "Enemy.h"
 
 class Projectile : public Actor
 {
 public:
-	Projectile(float x, float y, Game* game);
+	Projectile(float xTarget, float yTarget, float x, float y, Game* game);
 	void update();
+	float xTarget;
+	float yTarget;
 };
