@@ -17,14 +17,13 @@ ChargeEnemy::ChargeEnemy(float x, float y, Game* game)
 	chargeDirectionY = 0;
 	
 	// Sprite específico para ChargeEnemy
-	texture = game->getTexture("res/charge_enemy.png");
-	aMoving = new Animation("res/charge_enemy_anim.png", width, height,
-		108, 40, 6, 3, game);
+	texture = game->getTexture("res/AlienCarguero.png");
+	aMoving = new Animation("res/AlienCarguero.png", width, height,
+		128, 32, 6, 3, game);
 	animation = aMoving;
 }
 
 void ChargeEnemy::update() {
-	animation->update();
 	// El movimiento se actualiza desde GameLayer
 }
 

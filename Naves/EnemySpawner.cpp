@@ -1,7 +1,7 @@
 #include "EnemySpawner.h"
 
 EnemySpawner::EnemySpawner(float x, float y, std::string enemyType, Game* game)
-    : Actor("res/spawner_enemigo.png", x, y, 32, 32, game) {
+    : Actor("res/Spawner.png", x, y, 32, 32, game) {
     
     this->enemyType = enemyType;
     spawnInterval = 180; // 6 segundos aproximadamente (180 frames a 30 FPS)

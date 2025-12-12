@@ -7,9 +7,9 @@ BasicEnemy::BasicEnemy(float x, float y, Game* game)
 	speed = 1.5f; // Velocidad moderada
 	
 	// Sprite específico para BasicEnemy
-	texture = game->getTexture("res/basic_enemy.png");
-	aMoving = new Animation("res/basic_enemy_anim.png", width, height,
-		108, 40, 6, 3, game);
+	texture = game->getTexture("res/AlienBasico.png");
+	aMoving = new Animation("res/AlienBasico.png", width, height,
+		192, 32, 5, 6, game);
 	animation = aMoving;
 }
 

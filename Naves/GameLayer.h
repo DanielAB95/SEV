@@ -22,6 +22,8 @@
 #include <list>
 #include <fstream> // Leer ficheros
 #include <sstream> // Leer líneas / String
+#include <vector>
+#include <random>
 #include "Space.h" // importar
 
 class GameLayer : public Layer

@@ -32,5 +32,6 @@ public:
 	bool loopActive; // Juego activo
 	Layer* layer;
 	Layer* gameLayer;
+	Layer* gameOverLayer;
 	Layer* inicioLayer;
 };

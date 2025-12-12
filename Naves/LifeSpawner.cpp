@@ -1,7 +1,7 @@
 #include "LifeSpawner.h"
 
 LifeSpawner::LifeSpawner(float x, float y, Game* game)
-    : Actor("res/spawner_vida.png", x, y, 32, 32, game) {
+    : Actor("res/SpawnerVidas.png", x, y, 32, 32, game) {
     
     spawnInterval = 300; // 10 segundos aproximadamente (300 frames a 30 FPS)
     spawnTimer = 0;

@@ -6,8 +6,9 @@ InicioLayer::InicioLayer(Game* game) : Layer(game) {
 
 void InicioLayer::init() {
 	// Fondo normal, sin velocidad
-	background = new Background("res/menu_fondo.png", WIDTH * 0.5, HEIGHT * 0.5, game); //TODO cambiar imagen
-	button = new Actor("res/boton_jugar.png", WIDTH * 0.5, HEIGHT * 0.7, 232, 72, game); //TODO cambiar boton
+	background = new Background("res/Inicio1.png", WIDTH * 0.5, HEIGHT * 0.5, game);
+	screen = 0;
+	controlContinue = false;
 }
 
 void InicioLayer::processControls() {
@@ -20,7 +21,7 @@ void InicioLayer::processControls() {
 	if (controlContinue) {
 		// Cambia la capa
 		game->layer = game->gameLayer;
-		controlContinue = false;
+		game->layer->init();
 	}
 }
 
@@ -29,11 +30,15 @@ void InicioLayer::keysToControls(SDL_Event event) {
 		int code = event.key.keysym.sym;
 		// Pulsada
 		switch (code) {
-		case SDLK_ESCAPE: // derecha
+		case SDLK_ESCAPE:
 			game->loopActive = false;
 			break;
-		case SDLK_SPACE: // dispara
-			controlContinue = true;
+		case SDLK_SPACE:
+			if (screen > 0) {
+				controlContinue = true;
+			}
+			screen++;
+			background = new Background("res/Inicio2.png", WIDTH * 0.5, HEIGHT * 0.5, game);
 			break;
 		}
 	}
@@ -41,7 +46,6 @@ void InicioLayer::keysToControls(SDL_Event event) {
 
 void InicioLayer::draw() {
 	background->draw();
-	button->draw();
 
 	SDL_RenderPresent(game->renderer); // Renderiza NO PUEDE FALTAR
 }

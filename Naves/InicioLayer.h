@@ -15,5 +15,6 @@ public:
 	bool controlContinue;
 	Background* background;
 	Actor* button;
+	int screen = 0;
 };
 

@@ -6,8 +6,8 @@ GameOverLayer::GameOverLayer(Game* game) : Layer(game) {
 
 void GameOverLayer::init() {
 	// Fondo normal, sin velocidad
-	background = new Background("res/menu_fondo.png", WIDTH * 0.5, HEIGHT * 0.5, game); //TODO cambiar imagen a la de fin de partida
-	button = new Actor("res/boton_jugar.png", WIDTH * 0.5, HEIGHT * 0.7, 232, 72, game); //TODO cambiar boton
+	background = new Background("res/GameOver.png", WIDTH * 0.5, HEIGHT * 0.5, game);
+	controlContinue = false;
 }
 
 void GameOverLayer::processControls() {
@@ -19,8 +19,8 @@ void GameOverLayer::processControls() {
 	//procesar controles, solo tiene uno
 	if (controlContinue) {
 		// Cambia la capa
-		game->layer = game->gameLayer;
-		controlContinue = false;
+		game->layer = game->inicioLayer;
+		game->layer->init();
 	}
 }
 
@@ -41,7 +41,6 @@ void GameOverLayer::keysToControls(SDL_Event event) {
 
 void GameOverLayer::draw() {
 	background->draw();
-	button->draw();
 
 	SDL_RenderPresent(game->renderer); // Renderiza NO PUEDE FALTAR
 }

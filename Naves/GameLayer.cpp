@@ -385,7 +385,8 @@ void GameLayer::update() {
 				deleteEnemies.push_back(enemy);
 			}
 			if (player->lives == 0) {
-				init();
+				game->layer = game->gameOverLayer;
+				game->layer->init();
 				return;
 			}
 		}
@@ -402,7 +403,8 @@ void GameLayer::update() {
 				deleteEnemyProjectiles.push_back(enemyProj);
 			}
 			if (player->lives == 0) {
-				init();
+				game->layer = game->gameOverLayer;
+				game->layer->init();
 				return;
 			}
 		}
@@ -584,12 +586,12 @@ void GameLayer::loadMap(string name) {
 		// Por línea
 		for (int i = 0; getline(streamFile, line); i++) {
 			istringstream streamLine(line);
-			mapWidth = line.length() * 40; // Ancho del mapa en pixels
+			mapWidth = line.length() * 32; // Ancho del mapa en pixels
 			// Por carácter (en cada línea)
-			for (int j = 0; !streamLine.eof(); j++) {
+			for (int j = 0; j<line.length(); j++) {
 				streamLine >> character; // Leer character 
 				cout << character;
-				float x = 40 / 2 + j * 40; // x central
+				float x = 32 / 2 + j * 32; // x central
 				float y = 32 + i * 32; // y suelo
 				loadMapObject(character, x, y);
 			}
@@ -604,27 +606,38 @@ void GameLayer::loadMap(string name) {
 void GameLayer::loadMapObject(char character, float x, float y)
 {
 	switch (character) {
-	case '1': {
+	case 'P': {
 		player = new Player(x, y, game);
 		// modificación para empezar a contar desde el suelo.
 		player->y = player->y - player->height / 2;
 		space->addDynamicActor(player);
-		break;
-	}
-	case '#': {
-		Tile* tile = new Tile("res/bloque_tierra.png", x, y, game);
+		Tile* tile = new Tile("res/Tierra1.png", x, y, game);
 		// modificación para empezar a contar desde el suelo.
 		tile->y = tile->y - tile->height / 2;
 		tiles.push_back(tile);
 		// NO agregar al space - no debe colisionar
 		break;
 	}
-	case 'E': {
-		Enemy* enemy = new Enemy(x, y, game);
+	case '#': {
+		static std::vector<const char*> names = {
+		"res/Tierra1.png",
+		"res/Tierra2.png",
+		"res/Tierra3.png",
+		"res/Tierra4.png"
+		};
+
+		static std::vector<double> weights = { 0.055, 0.005, 0.5, 0.44 };
+
+		static std::random_device rd;
+		static std::mt19937 gen(rd());
+		static std::discrete_distribution<> dist(weights.begin(), weights.end());
+
+		const char* selected = names[dist(gen)];
+		Tile* tile = new Tile(selected, x, y, game);
 		// modificación para empezar a contar desde el suelo.
-		enemy->y = enemy->y - enemy->height / 2;
-		enemies.push_back(enemy);
-		space->addDynamicActor(enemy);
+		tile->y = tile->y - tile->height / 2;
+		tiles.push_back(tile);
+		// NO agregar al space - no debe colisionar
 		break;
 	}
 	case 'B': {
@@ -633,6 +646,11 @@ void GameLayer::loadMapObject(char character, float x, float y)
 		basicEnemy->y = basicEnemy->y - basicEnemy->height / 2;
 		enemies.push_back(basicEnemy);
 		space->addDynamicActor(basicEnemy);
+		Tile* tile = new Tile("res/Tierra1.png", x, y, game);
+		// modificación para empezar a contar desde el suelo.
+		tile->y = tile->y - tile->height / 2;
+		tiles.push_back(tile);
+		// NO agregar al space - no debe colisionar
 		break;
 	}
 	case 'R': {
@@ -641,6 +659,11 @@ void GameLayer::loadMapObject(char character, float x, float y)
 		chargeEnemy->y = chargeEnemy->y - chargeEnemy->height / 2;
 		enemies.push_back(chargeEnemy);
 		space->addDynamicActor(chargeEnemy);
+		Tile* tile = new Tile("res/Tierra1.png", x, y, game);
+		// modificación para empezar a contar desde el suelo.
+		tile->y = tile->y - tile->height / 2;
+		tiles.push_back(tile);
+		// NO agregar al space - no debe colisionar
 		break;
 	}
 	case 'T': {
@@ -649,11 +672,79 @@ void GameLayer::loadMapObject(char character, float x, float y)
 		shooterEnemy->y = shooterEnemy->y - shooterEnemy->height / 2;
 		enemies.push_back(shooterEnemy);
 		space->addDynamicActor(shooterEnemy);
+		Tile* tile = new Tile("res/Tierra1.png", x, y, game);
+		// modificación para empezar a contar desde el suelo.
+		tile->y = tile->y - tile->height / 2;
+		tiles.push_back(tile);
+		// NO agregar al space - no debe colisionar
 		break;
 	}
-	case 'L': {
+	case '0': {
 		//"Límite del mapa"
-		Tile* tile = new Tile("res/bloque_limite.png", x, y, game);
+		Tile* tile = new Tile("res/BordeTL.png", x, y, game);
+		// modificación para empezar a contar desde el suelo.
+		tile->y = tile->y - tile->height / 2;
+		tiles.push_back(tile);
+		space->addStaticActor(tile);
+		break;
+	}
+	case '1': {
+		//"Límite del mapa"
+		Tile* tile = new Tile("res/BordeT.png", x, y, game);
+		// modificación para empezar a contar desde el suelo.
+		tile->y = tile->y - tile->height / 2;
+		tiles.push_back(tile);
+		space->addStaticActor(tile);
+		break;
+	}
+	case '2': {
+		//"Límite del mapa"
+		Tile* tile = new Tile("res/BordeTR.png", x, y, game);
+		// modificación para empezar a contar desde el suelo.
+		tile->y = tile->y - tile->height / 2;
+		tiles.push_back(tile);
+		space->addStaticActor(tile);
+		break;
+	}
+	case '3': {
+		//"Límite del mapa"
+		Tile* tile = new Tile("res/BordeL.png", x, y, game);
+		// modificación para empezar a contar desde el suelo.
+		tile->y = tile->y - tile->height / 2;
+		tiles.push_back(tile);
+		space->addStaticActor(tile);
+		break;
+	}
+	case '4': {
+		//"Límite del mapa"
+		Tile* tile = new Tile("res/BordeR.png", x, y, game);
+		// modificación para empezar a contar desde el suelo.
+		tile->y = tile->y - tile->height / 2;
+		tiles.push_back(tile);
+		space->addStaticActor(tile);
+		break;
+	}
+	case '5': {
+		//"Límite del mapa"
+		Tile* tile = new Tile("res/BordeBL.png", x, y, game);
+		// modificación para empezar a contar desde el suelo.
+		tile->y = tile->y - tile->height / 2;
+		tiles.push_back(tile);
+		space->addStaticActor(tile);
+		break;
+	}
+	case '6': {
+		//"Límite del mapa"
+		Tile* tile = new Tile("res/BordeB.png", x, y, game);
+		// modificación para empezar a contar desde el suelo.
+		tile->y = tile->y - tile->height / 2;
+		tiles.push_back(tile);
+		space->addStaticActor(tile);
+		break;
+	}
+	case '7': {
+		//"Límite del mapa"
+		Tile* tile = new Tile("res/BordeBR.png", x, y, game);
 		// modificación para empezar a contar desde el suelo.
 		tile->y = tile->y - tile->height / 2;
 		tiles.push_back(tile);
@@ -815,6 +906,6 @@ void GameLayer::nextLevel() {
 		// Juego completado
 		cout << "¡Has completado todos los niveles!" << endl;
 		// Puedes reiniciar el juego o mostrar pantalla de victoria
-		init();
+		game->layer = game->inicioLayer;
 	}
 }
