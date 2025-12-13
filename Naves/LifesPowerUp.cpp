@@ -8,6 +8,8 @@ LifesPowerUp::LifesPowerUp(float x, float y, Game* game)
 }
 
 void LifesPowerUp::effect(Player* player) {
-	player->lives++;
-	cout << "¡Power-up de vida recogido! Vidas: " << player->lives << endl;
+	// Curar un 30% de la vida máxima (mínimo 10 de vida)
+	int healAmount = max(10, static_cast<int>(player->maxLives * 0.3f));
+	player->lives = min(player->maxLives, player->lives + healAmount);
+	cout << "¡Power-up de vida recogido! Curado +" << healAmount << " HP. Vida actual: " << player->lives << "/" << player->maxLives << endl;
 }

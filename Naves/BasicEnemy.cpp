@@ -2,9 +2,12 @@
 #include <cmath>
 
 BasicEnemy::BasicEnemy(float x, float y, Game* game)
-	: Enemy(x, y, game) {
-	lives = 3;
-	speed = 1.5f; // Velocidad moderada
+: Enemy(x, y, game) {
+	maxLives = 30; // x10 para mejor escalado
+	lives = 30;
+	damage = 8; // Daño moderado
+	moveSpeed = 1.5f; // Velocidad moderada
+	coinReward = 120; // AUMENTADO: Enemigo básico da 120 monedas (era 20)
 	
 	// Sprite específico para BasicEnemy
 	texture = game->getTexture("res/AlienBasico.png");
@@ -30,7 +33,7 @@ void BasicEnemy::moveTowardsPlayer(Player* player) {
 	
 	// Normalizar y aplicar velocidad
 	if (distance > 0) {
-		vx = (dx / distance) * speed;
-		vy = (dy / distance) * speed;
+		vx = (dx / distance) * moveSpeed;
+		vy = (dy / distance) * moveSpeed;
 	}
 }

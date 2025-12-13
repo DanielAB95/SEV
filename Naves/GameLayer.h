@@ -45,6 +45,16 @@ public:
 	float levelTime;
 	float levelDuration;
 	bool levelCompleted;
+	float shopHintTimer; // Temporizador para mostrar el hint de tienda
+	
+	// Variables para conservar estado del jugador entre niveles
+	int savedPlayerMoney;
+	int savedPlayerLives;
+	int savedPlayerMaxLives;
+	int savedPlayerDamage;
+	int savedPlayerShoots;
+	float savedPlayerMoveSpeed;
+	bool hasPlayerData;
 	void loadLevel(int level);
 	void nextLevel();
 	float getLevelDuration(int level);
@@ -67,6 +77,7 @@ public:
 	Text* textLevel;
 	Text* textTime;
 	Text* textMoney; // Texto para mostrar el dinero
+	Text* shopHint; // Texto para indicar cómo abrir la tienda
 	int points;
 	int newBasicEnemyTime = 0;
 	int newSMovingEnemyTime = 0;

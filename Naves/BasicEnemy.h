@@ -8,6 +8,5 @@ public:
 	BasicEnemy(float x, float y, Game* game);
 	void update() override;
 	void moveTowardsPlayer(Player* player); // Método para perseguir al jugador
-	float speed;
 };
 

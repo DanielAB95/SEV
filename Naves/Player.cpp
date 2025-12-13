@@ -4,8 +4,13 @@ Player::Player(float x, float y, Game* game)
 	: Actor("res/astronauta.png", x, y, 32, 32, game) {
 
 	audioShoot = Audio::createAudio("res/efecto_disparo.wav", false);
-	lives = 3;
+	lives = 30;
 	money = 0; // Inicializar dinero
+	
+	// INICIALIZAR STATS
+	maxLives = 30;
+	damage = 10;
+	moveSpeed = 3.0f;
 
 	aMoving = new Animation("res/astronauta.png", width, height,
 		192, 32, 5, 6, game);
@@ -28,7 +33,9 @@ Projectile* Player::shoot(Enemy* target) {
 		audioShoot->play();
 		shootTime = shootCadence;
 		numberOfShoots--;
-		return new Projectile(target->x, target->y, x, y, game);
+		Projectile* projectile = new Projectile(target->x, target->y, x, y, game);
+		projectile->damage = this->damage; // Asignar daño del jugador al proyectil
+		return projectile;
 	}
 	else {
 		return NULL;
@@ -37,16 +44,29 @@ Projectile* Player::shoot(Enemy* target) {
 
 
 void Player::moveX(float axis) {
-	vx = axis * 3;
+	vx = axis * moveSpeed;
 }
 
 void Player::moveY(float axis) {
-	vy = axis * 3;
+	vy = axis * moveSpeed;
 }
 
 
 void Player::draw(float scrollX, float scrollY) {
 	animation->draw(x - scrollX, y- scrollY);
+}
+
+void Player::upgradeHealth() {
+	maxLives += 10; // +10 HP por mejora
+	lives = maxLives; // Restaurar vida completa al mejorar
+}
+
+void Player::upgradeDamage() {
+	damage += 5; // +5 daño por mejora (50% del daño base)
+}
+
+void Player::upgradeSpeed() {
+	moveSpeed += 0.5f;
 }
 
 

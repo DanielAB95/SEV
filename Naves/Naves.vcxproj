@@ -177,6 +177,8 @@
     <ClCompile Include="Projectile.cpp" />
     <ClCompile Include="ShooterEnemy.cpp" />
     <ClCompile Include="ShootPowerUp.cpp" />
+    <ClCompile Include="ShopItem.cpp" />
+    <ClCompile Include="ShopLayer.cpp" />
     <ClCompile Include="SMovingEnemy.cpp" />
     <ClCompile Include="Space.cpp" />
     <ClCompile Include="Text.cpp" />
@@ -208,6 +210,8 @@
     <ClInclude Include="Projectile.h" />
     <ClInclude Include="ShooterEnemy.h" />
     <ClInclude Include="ShootPowerUp.h" />
+    <ClInclude Include="ShopItem.h" />
+    <ClInclude Include="ShopLayer.h" />
     <ClInclude Include="SMovingEnemy.h" />
     <ClInclude Include="Space.h" />
     <ClInclude Include="Text.h" />

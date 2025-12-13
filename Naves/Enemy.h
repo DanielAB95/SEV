@@ -12,4 +12,13 @@ public:
 	Animation* aMoving;
 	Animation* animation;
 	int lives;
+	
+	// STATS DE ENEMIGOS
+	int maxLives;
+	int damage;
+	float moveSpeed;
+	int coinReward;
+	
+	// Método para escalar stats según nivel
+	void scaleStatsForLevel(int level);
 };

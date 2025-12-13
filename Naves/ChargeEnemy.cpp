@@ -6,9 +6,15 @@ using namespace std;
 ChargeEnemy::ChargeEnemy(float x, float y, Game* game)
 	: Enemy(x, y, game) {
 	
-	lives = 2;
-	normalSpeed = 1.0f;
-	chargeSpeed = 5.0f;
+	
+	
+	maxLives = 25; // Menos vida pero más peligroso
+	lives = 25;
+	damage = 15; // Daño alto por embestida
+	moveSpeed = 2.0f;
+	coinReward = 100; // AÑADIDO: Enemigo cargador da 100 monedas
+	normalSpeed = 2.0f;
+	chargeSpeed = 3 * moveSpeed;
 	detectionRange = 300.0f; // Rango de detección
 	isCharging = false;
 	patrolDirection = 0; // Empieza moviéndose a la derecha
@@ -40,20 +46,20 @@ void ChargeEnemy::patrolBorder() {
 	// Establecer velocidad según dirección
 	switch (patrolDirection) {
 		case 0: // Derecha
-			vx = normalSpeed;
+			vx = moveSpeed;
 			vy = 0;
 			break;
 		case 1: // Abajo
 			vx = 0;
-			vy = normalSpeed;
+			vy = moveSpeed;
 			break;
 		case 2: // Izquierda
-			vx = -normalSpeed;
+			vx = -moveSpeed;
 			vy = 0;
 			break;
 		case 3: // Arriba
 			vx = 0;
-			vy = -normalSpeed;
+			vy = -moveSpeed;
 			break;
 	}
 }
@@ -84,13 +90,15 @@ void ChargeEnemy::checkAndCharge(Player* player) {
 		
 		if (alignedX) {
 			// Embestir horizontalmente
-			chargeDirectionX = (dx > 0) ? chargeSpeed : -chargeSpeed;
+			float actualChargeSpeed = moveSpeed * 3.0f; // 3x la velocidad normal
+			chargeDirectionX = (dx > 0) ? actualChargeSpeed : -actualChargeSpeed;
 			chargeDirectionY = 0;
 			cout << "¡ChargeEnemy embiste horizontalmente!" << endl;
 		} else if (alignedY) {
 			// Embestir verticalmente
+			float actualChargeSpeed = moveSpeed * 3.0f; // 3x la velocidad normal
 			chargeDirectionX = 0;
-			chargeDirectionY = (dy > 0) ? chargeSpeed : -chargeSpeed;
+			chargeDirectionY = (dy > 0) ? actualChargeSpeed : -actualChargeSpeed;
 			cout << "¡ChargeEnemy embiste verticalmente!" << endl;
 		}
 	}

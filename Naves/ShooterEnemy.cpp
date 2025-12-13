@@ -6,8 +6,15 @@ using namespace std;
 ShooterEnemy::ShooterEnemy(float x, float y, Game* game)
 	: Enemy(x, y, game) {
 	
-	lives = 2;
-	speed = 1.5f; // Aumentada para mejor movimiento
+	
+	
+	
+	
+	maxLives = 20; // Menos vida, más frágil
+	lives = 20;
+	damage = 6; // Daño bajo en contacto (no es su fuerte)
+	moveSpeed = 1.5f;
+	coinReward = 90; // AUMENTADO: Enemigo tirador da 90 monedas (era 25)
 	minDistance = 150.0f; // Distancia mínima
 	maxDistance = 250.0f; // Distancia máxima
 	shootCadence = 90; // Dispara cada 3 segundos aprox (90 frames a 30 FPS)
@@ -59,29 +66,29 @@ void ShooterEnemy::maintainDistance(Player* player) {
 	// Si está muy lejos (fuera de vista), acercarse rápidamente
 	if (distance > maxDistance * 2.0f) {
 		// Moverse rápido hacia el jugador para volver a la vista
-		vx = (dx / distance) * speed * 2.0f;
-		vy = (dy / distance) * speed * 2.0f;
+		vx = (dx / distance) * moveSpeed * 2.0f;
+		vy = (dy / distance) * moveSpeed * 2.0f;
 		return;
 	}
 	
 	// Si está muy cerca, alejarse
 	if (distance < minDistance) {
 		// Huir del jugador
-		vx = -(dx / distance) * speed;
-		vy = -(dy / distance) * speed;
+		vx = -(dx / distance) * moveSpeed;
+		vy = -(dy / distance) * moveSpeed;
 	}
 	// Si está muy lejos, acercarse
 	else if (distance > maxDistance) {
 		// Acercarse al jugador
-		vx = (dx / distance) * speed;
-		vy = (dx / distance) * speed;
+		vx = (dx / distance) * moveSpeed;
+		vy = (dy / distance) * moveSpeed;
 	}
 	// Si está en la distancia óptima, moverse lateral o quedarse quieto
 	else {
 		// Movimiento lateral para dificultar ser alcanzado
 		// Perpendicular al jugador
-		vx = -(dy / distance) * speed * 0.5f;
-		vy = (dx / distance) * speed * 0.5f;
+		vx = -(dy / distance) * moveSpeed * 0.5f;
+		vy = (dx / distance) * moveSpeed * 0.5f;
 	}
 }
 
@@ -116,8 +123,8 @@ void ShooterEnemy::maintainDistance(Player* player, float scrollX, float scrollY
 		// Normalizar y multiplicar por velocidad alta
 		float normalizedDx = dx / distance;
 		float normalizedDy = dy / distance;
-		vx = normalizedDx * speed * 3.0f; // Triple velocidad para perseguir
-		vy = normalizedDy * speed * 3.0f;
+		vx = normalizedDx * moveSpeed * 3.0f; // Triple velocidad para perseguir
+		vy = normalizedDy * moveSpeed * 3.0f;
 		return;
 	}
 	
@@ -127,8 +134,8 @@ void ShooterEnemy::maintainDistance(Player* player, float scrollX, float scrollY
 		// Huir del jugador
 		float normalizedDx = dx / distance;
 		float normalizedDy = dy / distance;
-		vx = -normalizedDx * speed;
-		vy = -normalizedDy * speed;
+		vx = -normalizedDx * moveSpeed;
+		vy = -normalizedDy * moveSpeed;
 		cout << ">>> ShooterEnemy MUY CERCA - Alejándose" << endl;
 	}
 	// Si está lejos pero en rango de disparo, acercarse lentamente
@@ -136,8 +143,8 @@ void ShooterEnemy::maintainDistance(Player* player, float scrollX, float scrollY
 		// Acercarse al jugador
 		float normalizedDx = dx / distance;
 		float normalizedDy = dy / distance;
-		vx = normalizedDx * speed;
-		vy = normalizedDy * speed;
+		vx = normalizedDx * moveSpeed;
+		vy = normalizedDy * moveSpeed;
 		cout << ">>> ShooterEnemy en rango - Acercándose lentamente" << endl;
 	}
 	// Si está en la distancia óptima, moverse lateralmente
@@ -146,8 +153,8 @@ void ShooterEnemy::maintainDistance(Player* player, float scrollX, float scrollY
 		// Perpendicular al jugador
 		float normalizedDx = dx / distance;
 		float normalizedDy = dy / distance;
-		vx = -normalizedDy * speed * 0.5f;
-		vy = normalizedDx * speed * 0.5f;
+		vx = -normalizedDy * moveSpeed * 0.5f;
+		vy = normalizedDx * moveSpeed * 0.5f;
 	}
 }
 

@@ -10,4 +10,5 @@ public:
 	void update();
 	float xTarget;
 	float yTarget;
+	int damage; // Daño que inflige el proyectil
 };

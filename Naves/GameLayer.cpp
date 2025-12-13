@@ -1,4 +1,5 @@
-Ôªø#include "GameLayer.h"
+#include "GameLayer.h"
+#include "ShopLayer.h"
 
 GameLayer::GameLayer(Game* game)
 	: Layer(game) {
@@ -9,6 +10,16 @@ GameLayer::GameLayer(Game* game)
 	totalLevels = 5;
 	levelTime = 0.0f;
 	levelCompleted = false;
+	shopHintTimer = 5.0f; // Mostrar hint 5 segundos
+	
+	// Inicializar variables para conservar estado del jugador
+	savedPlayerMoney = 0;
+	savedPlayerLives = 0;
+	savedPlayerMaxLives = 0;
+	savedPlayerDamage = 0;
+	savedPlayerShoots = 20; 
+	savedPlayerMoveSpeed = 0;
+	hasPlayerData = false;
 	
 	init();
 }
@@ -22,7 +33,7 @@ void GameLayer::init() {
 
 	points = 0;
 	
-	// HUD superior derecha - PUNTOS (estrella + n√∫mero) - Ajustado para verse completo
+	// HUD superior derecha - PUNTOS (estrella + n˙mero) - Ajustado para verse completo
 	backgroundPoints = new Actor("res/icono_puntos.png", WIDTH * 0.88, HEIGHT * 0.06, 32, 32, game);
 	textPoints = new Text("0", WIDTH * 0.95, HEIGHT * 0.06, game);
 	
@@ -30,16 +41,17 @@ void GameLayer::init() {
 	textLevel = new Text("NIVEL: 1/5", WIDTH * 0.15, HEIGHT * 0.06, game);
 	textTime = new Text("TIEMPO: 30", WIDTH * 0.15, HEIGHT * 0.13, game);
 	
-	// HUD inferior izquierda - VIDAS (coraz√≥n + n√∫mero) - Tama√±o correcto 44x36
+	// HUD inferior izquierda - VIDAS (corazÛn + n˙mero) - TamaÒo correcto 44x36
 	backgroundLives = new Actor("res/corazon.png", WIDTH * 0.07, HEIGHT * 0.93, 44, 36, game);
 	lifePoints = new Text("0", WIDTH * 0.14, HEIGHT * 0.93, game);
 	
-	// HUD inferior centro-izquierda - DINERO (moneda + n√∫mero) - Mejor espaciado
+	// HUD inferior centro-izquierda - DINERO (moneda + n˙mero) - Mejor espaciado
 	backgroundMoney = new Actor("res/icono_moneda.png", WIDTH * 0.26, HEIGHT * 0.93, 28, 28, game);
 	textMoney = new Text("0", WIDTH * 0.33, HEIGHT * 0.93, game);
 	
 	// HUD inferior derecha - DISPAROS - Ajustado para no salirse
 	textShoots = new Text("Disparos: 0", WIDTH * 0.78, HEIGHT * 0.93, game);
+	
 
 	background = new Background("res/fondo.png", WIDTH * 0.5, HEIGHT * 0.5, -1, game);
 	
@@ -54,12 +66,13 @@ void GameLayer::init() {
 	currentLevel = 1;
 	levelTime = 0.0f;
 	levelCompleted = false;
+	shopHintTimer = 5.0f;
 	levelDuration = getLevelDuration(currentLevel);
 
-	loadMap("res/0.txt");  // ‚Üê player se crea aqu√≠
+	loadMap("res/0.txt"); 
 
 	// Actualizar los textos con los valores iniciales del jugador
-	lifePoints->content = to_string(player->lives);
+	lifePoints->content = to_string(player->lives) + "/" + to_string(player->maxLives);
 	textMoney->content = to_string(player->money);
 	textShoots->content = "Disparos: " + to_string(player->numberOfShoots);
 	textPoints->content = to_string(points);
@@ -172,14 +185,19 @@ void GameLayer::keysToControls(SDL_Event event) {
 
 void GameLayer::update() {
 	// Actualizar el tiempo del nivel
-	levelTime += 0.033f; // Aproximadamente 30 FPS (1/30 = 0.033)
+	levelTime += 0.033f;
+	
+	// Actualizar temporizador del hint de tienda
+	if (shopHintTimer > 0) {
+		shopHintTimer -= 0.033f;
+	}
 	
 	// Actualizar texto de tiempo
 	float timeRemaining = levelDuration - levelTime;
 	if (timeRemaining < 0) timeRemaining = 0;
 	textTime->content = "TIEMPO: " + to_string((int)timeRemaining);
 	
-	// Verificar si se complet√≥ el nivel (tiempo cumplido y jugador vivo)
+	// Verificar si se completÛ el nivel (tiempo cumplido y jugador vivo)
 	if (!levelCompleted && levelTime >= levelDuration) {
 		levelCompleted = true;
 		nextLevel();
@@ -189,16 +207,16 @@ void GameLayer::update() {
 	background->update();
 	
 	// Actualizar textos del HUD
-	lifePoints->content = to_string(player->lives);
+	lifePoints->content = to_string(player->lives) + "/" + to_string(player->maxLives);
 	textMoney->content = to_string(player->money);
 	textShoots->content = "Disparos: " + to_string(player->numberOfShoots);
 
 	player->update();
 	
-	// Calcular scroll para usarlo en la l√≥gica de enemigos
+	// Calcular scroll para usarlo en la lÛgica de enemigos
 	calculateScroll();
 	
-	// Actualizar enemigos seg√∫n su tipo ANTES de space->update()
+	// Actualizar enemigos seg˙n su tipo ANTES de space->update()
 	for (auto const& enemy : enemies) {
 		// Identificar tipo de enemigo y actualizar comportamiento
 		BasicEnemy* basicEnemy = dynamic_cast<BasicEnemy*>(enemy);
@@ -213,7 +231,7 @@ void GameLayer::update() {
 		
 		ShooterEnemy* shooterEnemy = dynamic_cast<ShooterEnemy*>(enemy);
 		if (shooterEnemy != nullptr) {
-			// Usar la versi√≥n con scroll para detectar visibilidad
+			// Usar la versiÛn con scroll para detectar visibilidad
 			shooterEnemy->maintainDistance(player, scrollX, scrollY);
 			// Intentar disparar
 			EnemyProjectile* enemyProj = shooterEnemy->shoot(player);
@@ -235,12 +253,12 @@ void GameLayer::update() {
 		space->removeDynamicActor(enemyProj);
 	}
 	
-	// IMPORTANTE: Actualizar space DESPU√âS de establecer las velocidades
+	// IMPORTANTE: Actualizar space DESPU…S de establecer las velocidades
 	space->update();
 	
 	// Ahora procesar proyectiles enemigos con rebotes
 	for (auto const& enemyProj : enemyProjectiles) {
-		// Guardar posici√≥n y velocidad anterior
+		// Guardar posiciÛn y velocidad anterior
 		float oldX = enemyProj->x;
 		float oldY = enemyProj->y;
 		float oldVx = enemyProj->vx;
@@ -250,23 +268,23 @@ void GameLayer::update() {
 		float newX = oldX + enemyProj->vx;
 		float newY = oldY + enemyProj->vy;
 		
-		// Probar nueva posici√≥n
+		// Probar nueva posiciÛn
 		enemyProj->x = newX;
 		enemyProj->y = newY;
 		
 		bool collidesHorizontal = false;
 		bool collidesVertical = false;
 		
-		// Verificar si hay colisi√≥n en la nueva posici√≥n
+		// Verificar si hay colisiÛn en la nueva posiciÛn
 		if (space->checkCollisionDirection(enemyProj, collidesHorizontal, collidesVertical)) {
-			// Si alcanz√≥ el m√°ximo de rebotes, marcarlo para eliminar
+			// Si alcanzÛ el m·ximo de rebotes, marcarlo para eliminar
 			if (enemyProj->currentBounces >= enemyProj->maxBounces) {
 				enemyProj->x = oldX;
 				enemyProj->y = oldY;
 				deleteEnemyProjectilesBounce.push_back(enemyProj);
-				cout << "Proyectil alcanz√≥ m√°ximo de rebotes (" << enemyProj->maxBounces << ") - Eliminando" << endl;
+				cout << "Proyectil alcanzÛ m·ximo de rebotes (" << enemyProj->maxBounces << ") - Eliminando" << endl;
 			} else {
-				// Hacer rebotar seg√∫n la direcci√≥n de colisi√≥n
+				// Hacer rebotar seg˙n la direcciÛn de colisiÛn
 				bool didBounce = false;
 				
 				if (collidesHorizontal) {
@@ -278,34 +296,34 @@ void GameLayer::update() {
 					didBounce = true;
 				}
 				
-				// Si rebot√≥ en ambos ejes simult√°neamente, el contador se incrementa dos veces
+				// Si rebotÛ en ambos ejes simult·neamente, el contador se incrementa dos veces
 				// Compensar para que solo cuente como un rebote
 				if (collidesHorizontal && collidesVertical && didBounce) {
 					enemyProj->currentBounces--;
 				}
 				
-				// Calcular nueva posici√≥n con velocidades invertidas
+				// Calcular nueva posiciÛn con velocidades invertidas
 				// Si colisiona en X, mantener Y original + movimiento en Y
 				// Si colisiona en Y, mantener X original + movimiento en X
 				if (collidesHorizontal && !collidesVertical) {
-					// Rebote horizontal: X vuelve a posici√≥n original, Y se mueve normalmente
+					// Rebote horizontal: X vuelve a posiciÛn original, Y se mueve normalmente
 					enemyProj->x = oldX;
 					enemyProj->y = oldY + enemyProj->vy;
 				} else if (collidesVertical && !collidesHorizontal) {
-					// Rebote vertical: Y vuelve a posici√≥n original, X se mueve normalmente
+					// Rebote vertical: Y vuelve a posiciÛn original, X se mueve normalmente
 					enemyProj->x = oldX + enemyProj->vx;
 					enemyProj->y = oldY;
 				} else {
-					// Rebote en esquina: ambos ejes vuelven a posici√≥n original
+					// Rebote en esquina: ambos ejes vuelven a posiciÛn original
 					enemyProj->x = oldX;
 					enemyProj->y = oldY;
 				}
 			}
 		}
-		// Si no hay colisi√≥n, la nueva posici√≥n ya est√° aplicada
+		// Si no hay colisiÛn, la nueva posiciÛn ya est· aplicada
 	}
 	
-	// Eliminar proyectiles que alcanzaron el l√≠mite de rebotes
+	// Eliminar proyectiles que alcanzaron el lÌmite de rebotes
 	for (auto const& delProj : deleteEnemyProjectilesBounce) {
 		enemyProjectiles.remove(delProj);
 		delete delProj;
@@ -327,12 +345,12 @@ void GameLayer::update() {
 	for (auto const& spawner : lifeSpawners) {
 		spawner->update();
 		if (spawner->shouldSpawn()) {
-			// Crear un power-up de vida en la posici√≥n del spawner
+			// Crear un power-up de vida en la posiciÛn del spawner
 			LifesPowerUp* lifePowerUp = new LifesPowerUp(spawner->x, spawner->y, game);
 			powerUps.push_back(lifePowerUp);
 			space->addDynamicActor(lifePowerUp);
 			spawner->resetTimer();
-			cout << "Spawner gener√≥ un coraz√≥n en posici√≥n (" << spawner->x << ", " << spawner->y << ")" << endl;
+			cout << "Spawner generÛ un corazÛn en posiciÛn (" << spawner->x << ", " << spawner->y << ")" << endl;
 		}
 	}
 	
@@ -357,12 +375,13 @@ void GameLayer::update() {
 			}
 			
 			if (newEnemy != nullptr) {
+				newEnemy->scaleStatsForLevel(currentLevel); // Escalar stats seg˙n nivel
 				enemies.push_back(newEnemy);
 				space->addDynamicActor(newEnemy);
 				spawner->currentEnemies++;
 				spawner->resetTimer();
-				cout << "Spawner gener√≥ enemigo tipo " << spawner->enemyType 
-				     << " en posici√≥n (" << spawner->x << ", " << spawner->y << ")" << endl;
+				cout << "Spawner generÛ enemigo tipo " << spawner->enemyType 
+				     << " en posiciÛn (" << spawner->x << ", " << spawner->y << ")" << endl;
 			}
 		}
 	}
@@ -377,14 +396,14 @@ void GameLayer::update() {
 	// Colisiones
 	for (auto const& enemy : enemies) {
 		if (player->isOverlap(enemy)) {
-			player->lives--;
+			player->lives -= enemy->damage; // Usar el daÒo del enemigo
 			bool eInList = std::find(deleteEnemies.begin(),
 				deleteEnemies.end(),
 				enemy) != deleteEnemies.end();
 			if (!eInList) {
 				deleteEnemies.push_back(enemy);
 			}
-			if (player->lives == 0) {
+			if (player->lives <= 0) {
 				game->layer = game->gameOverLayer;
 				game->layer->init();
 				return;
@@ -392,17 +411,17 @@ void GameLayer::update() {
 		}
 	}
 	
-	// Colisi√≥n proyectiles enemigos con jugador
+	// ColisiÛn proyectiles enemigos con jugador
 	for (auto const& enemyProj : enemyProjectiles) {
 		if (player->isOverlap(enemyProj)) {
-			player->lives--;
+			player->lives -= 8; // Proyectiles enemigos hacen daÒo moderado
 			bool pInList = std::find(deleteEnemyProjectiles.begin(),
 				deleteEnemyProjectiles.end(),
 				enemyProj) != deleteEnemyProjectiles.end();
 			if (!pInList) {
 				deleteEnemyProjectiles.push_back(enemyProj);
 			}
-			if (player->lives == 0) {
+			if (player->lives <= 0) {
 				game->layer = game->gameOverLayer;
 				game->layer->init();
 				return;
@@ -412,7 +431,7 @@ void GameLayer::update() {
 
 	for (auto const& powerUp : powerUps) {
 		if (player->isOverlap(powerUp)) {
-			cout << "¬°Colision con power-up detectada!" << endl;
+			cout << "°Colision con power-up detectada!" << endl;
 			powerUp->effect(player);
 			bool pInList = std::find(deletePowerUps.begin(),
 				deletePowerUps.end(),
@@ -437,8 +456,8 @@ void GameLayer::update() {
 	}
 	
 	// NOTA: Los proyectiles enemigos NO se eliminan cuando salen de pantalla
-	// Solo se eliminan al golpear al jugador o al alcanzar el m√°ximo de rebotes (6)
-	// Ya no hay c√≥digo aqu√≠ que los elimine por salir de pantalla
+	// Solo se eliminan al golpear al jugador o al alcanzar el m·ximo de rebotes (6)
+	// Ya no hay cÛdigo aquÌ que los elimine por salir de pantalla
 
 	for (auto const& powerUp : powerUps) {
 		if (powerUp->isInRender(scrollX, scrollY) == false && powerUp->x <= 0) {
@@ -456,7 +475,7 @@ void GameLayer::update() {
 	for (auto const& enemy : enemies) {
 		for (auto const& projectile : projectiles) {
 			if (enemy->isOverlap(projectile)) {
-				enemy->lives--;
+				enemy->lives -= projectile->damage; // Usar el daÒo del proyectil
 
 				bool pInList = std::find(deleteProjectiles.begin(),
 					deleteProjectiles.end(),
@@ -464,14 +483,14 @@ void GameLayer::update() {
 				if (!pInList) {
 					deleteProjectiles.push_back(projectile);
 				}
-				if (enemy->lives == 0) {
+				if (enemy->lives <= 0) {
 					bool eInList = std::find(deleteEnemies.begin(),
 						deleteEnemies.end(),
 						enemy) != deleteEnemies.end();
 					if (!eInList) {
 						deleteEnemies.push_back(enemy);
 						// Crear moneda cuando muere el enemigo
-						CoinPowerUp* coin = new CoinPowerUp(enemy->x, enemy->y, game);
+						CoinPowerUp* coin = new CoinPowerUp(enemy->x, enemy->y, enemy->coinReward, game);
 						powerUps.push_back(coin);
 						space->addDynamicActor(coin);
 					}
@@ -521,7 +540,7 @@ void GameLayer::update() {
 void GameLayer::draw() {
 	calculateScroll();
 	
-	// 1. FONDO (m√°s atr√°s)
+	// 1. FONDO (m·s atr·s)
 	background->draw();
 
 	// 2. TILES/SUELO
@@ -569,6 +588,11 @@ void GameLayer::draw() {
 	textMoney->draw(0, 0);
 	textLevel->draw(0, 0);
 	textTime->draw(0, 0);
+	
+	// Dibujar hint de tienda solo al inicio
+	if (shopHintTimer > 0) {
+		shopHint->draw(0, 0);
+	}
 
 	SDL_RenderPresent(game->renderer); // Renderiza
 }
@@ -583,11 +607,11 @@ void GameLayer::loadMap(string name) {
 		return;
 	}
 	else {
-		// Por l√≠nea
+		// Por lÌnea
 		for (int i = 0; getline(streamFile, line); i++) {
 			istringstream streamLine(line);
 			mapWidth = line.length() * 32; // Ancho del mapa en pixels
-			// Por car√°cter (en cada l√≠nea)
+			// Por car·cter (en cada lÌnea)
 			for (int j = 0; j<line.length(); j++) {
 				streamLine >> character; // Leer character 
 				cout << character;
@@ -608,11 +632,11 @@ void GameLayer::loadMapObject(char character, float x, float y)
 	switch (character) {
 	case 'P': {
 		player = new Player(x, y, game);
-		// modificaci√≥n para empezar a contar desde el suelo.
+		// modificaciÛn para empezar a contar desde el suelo.
 		player->y = player->y - player->height / 2;
 		space->addDynamicActor(player);
 		Tile* tile = new Tile("res/Tierra1.png", x, y, game);
-		// modificaci√≥n para empezar a contar desde el suelo.
+		// modificaciÛn para empezar a contar desde el suelo.
 		tile->y = tile->y - tile->height / 2;
 		tiles.push_back(tile);
 		// NO agregar al space - no debe colisionar
@@ -634,7 +658,7 @@ void GameLayer::loadMapObject(char character, float x, float y)
 
 		const char* selected = names[dist(gen)];
 		Tile* tile = new Tile(selected, x, y, game);
-		// modificaci√≥n para empezar a contar desde el suelo.
+		// modificaciÛn para empezar a contar desde el suelo.
 		tile->y = tile->y - tile->height / 2;
 		tiles.push_back(tile);
 		// NO agregar al space - no debe colisionar
@@ -643,24 +667,26 @@ void GameLayer::loadMapObject(char character, float x, float y)
 	case 'B': {
 		// BasicEnemy - Persigue al jugador directamente
 		BasicEnemy* basicEnemy = new BasicEnemy(x, y, game);
+		basicEnemy->scaleStatsForLevel(currentLevel); // Escalar stats
 		basicEnemy->y = basicEnemy->y - basicEnemy->height / 2;
 		enemies.push_back(basicEnemy);
 		space->addDynamicActor(basicEnemy);
 		Tile* tile = new Tile("res/Tierra1.png", x, y, game);
-		// modificaci√≥n para empezar a contar desde el suelo.
+		// modificaciÛn para empezar a contar desde el suelo.
 		tile->y = tile->y - tile->height / 2;
 		tiles.push_back(tile);
 		// NO agregar al space - no debe colisionar
 		break;
 	}
 	case 'R': {
-		// ChargeEnemy - Embiste cuando est√° alineado (R = Ram/Ramming)
+		// ChargeEnemy - Embiste cuando est· alineado (R = Ram/Ramming)
 		ChargeEnemy* chargeEnemy = new ChargeEnemy(x, y, game);
+		chargeEnemy->scaleStatsForLevel(currentLevel); // Escalar stats
 		chargeEnemy->y = chargeEnemy->y - chargeEnemy->height / 2;
 		enemies.push_back(chargeEnemy);
 		space->addDynamicActor(chargeEnemy);
 		Tile* tile = new Tile("res/Tierra1.png", x, y, game);
-		// modificaci√≥n para empezar a contar desde el suelo.
+		// modificaciÛn para empezar a contar desde el suelo.
 		tile->y = tile->y - tile->height / 2;
 		tiles.push_back(tile);
 		// NO agregar al space - no debe colisionar
@@ -669,83 +695,84 @@ void GameLayer::loadMapObject(char character, float x, float y)
 	case 'T': {
 		// ShooterEnemy - Dispara desde la distancia (T = Turret/Tirador)
 		ShooterEnemy* shooterEnemy = new ShooterEnemy(x, y, game);
+		shooterEnemy->scaleStatsForLevel(currentLevel); // Escalar stats
 		shooterEnemy->y = shooterEnemy->y - shooterEnemy->height / 2;
 		enemies.push_back(shooterEnemy);
 		space->addDynamicActor(shooterEnemy);
 		Tile* tile = new Tile("res/Tierra1.png", x, y, game);
-		// modificaci√≥n para empezar a contar desde el suelo.
+		// modificaciÛn para empezar a contar desde el suelo.
 		tile->y = tile->y - tile->height / 2;
 		tiles.push_back(tile);
 		// NO agregar al space - no debe colisionar
 		break;
 	}
 	case '0': {
-		//"L√≠mite del mapa"
+		//"LÌmite del mapa"
 		Tile* tile = new Tile("res/BordeTL.png", x, y, game);
-		// modificaci√≥n para empezar a contar desde el suelo.
+		// modificaciÛn para empezar a contar desde el suelo.
 		tile->y = tile->y - tile->height / 2;
 		tiles.push_back(tile);
 		space->addStaticActor(tile);
 		break;
 	}
 	case '1': {
-		//"L√≠mite del mapa"
+		//"LÌmite del mapa"
 		Tile* tile = new Tile("res/BordeT.png", x, y, game);
-		// modificaci√≥n para empezar a contar desde el suelo.
+		// modificaciÛn para empezar a contar desde el suelo.
 		tile->y = tile->y - tile->height / 2;
 		tiles.push_back(tile);
 		space->addStaticActor(tile);
 		break;
 	}
 	case '2': {
-		//"L√≠mite del mapa"
+		//"LÌmite del mapa"
 		Tile* tile = new Tile("res/BordeTR.png", x, y, game);
-		// modificaci√≥n para empezar a contar desde el suelo.
+		// modificaciÛn para empezar a contar desde el suelo.
 		tile->y = tile->y - tile->height / 2;
 		tiles.push_back(tile);
 		space->addStaticActor(tile);
 		break;
 	}
 	case '3': {
-		//"L√≠mite del mapa"
+		//"LÌmite del mapa"
 		Tile* tile = new Tile("res/BordeL.png", x, y, game);
-		// modificaci√≥n para empezar a contar desde el suelo.
+		// modificaciÛn para empezar a contar desde el suelo.
 		tile->y = tile->y - tile->height / 2;
 		tiles.push_back(tile);
 		space->addStaticActor(tile);
 		break;
 	}
 	case '4': {
-		//"L√≠mite del mapa"
+		//"LÌmite del mapa"
 		Tile* tile = new Tile("res/BordeR.png", x, y, game);
-		// modificaci√≥n para empezar a contar desde el suelo.
+		// modificaciÛn para empezar a contar desde el suelo.
 		tile->y = tile->y - tile->height / 2;
 		tiles.push_back(tile);
 		space->addStaticActor(tile);
 		break;
 	}
 	case '5': {
-		//"L√≠mite del mapa"
+		//"LÌmite del mapa"
 		Tile* tile = new Tile("res/BordeBL.png", x, y, game);
-		// modificaci√≥n para empezar a contar desde el suelo.
+		// modificaciÛn para empezar a contar desde el suelo.
 		tile->y = tile->y - tile->height / 2;
 		tiles.push_back(tile);
 		space->addStaticActor(tile);
 		break;
 	}
 	case '6': {
-		//"L√≠mite del mapa"
+		//"LÌmite del mapa"
 		Tile* tile = new Tile("res/BordeB.png", x, y, game);
-		// modificaci√≥n para empezar a contar desde el suelo.
+		// modificaciÛn para empezar a contar desde el suelo.
 		tile->y = tile->y - tile->height / 2;
 		tiles.push_back(tile);
 		space->addStaticActor(tile);
 		break;
 	}
 	case '7': {
-		//"L√≠mite del mapa"
+		//"LÌmite del mapa"
 		Tile* tile = new Tile("res/BordeBR.png", x, y, game);
-		// modificaci√≥n para empezar a contar desde el suelo.
+		// modificaciÛn para empezar a contar desde el suelo.
 		tile->y = tile->y - tile->height / 2;
 		tiles.push_back(tile);
 		space->addStaticActor(tile);
@@ -780,12 +807,12 @@ void GameLayer::loadMapObject(char character, float x, float y)
 		LifeSpawner* spawner = new LifeSpawner(x, y, game);
 		spawner->y = spawner->y - spawner->height / 2;
 		lifeSpawners.push_back(spawner);
-		// NO a√±adir al space - los spawners no colisionan
+		// NO aÒadir al space - los spawners no colisionan
 		cout << "Spawner de vida creado en (" << x << ", " << y << ")" << endl;
 		break;
 	}
 	case 'b': {
-		// Spawner de BasicEnemy (min√∫scula 'b')
+		// Spawner de BasicEnemy (min˙scula 'b')
 		EnemySpawner* spawner = new EnemySpawner(x, y, "B", game);
 		spawner->y = spawner->y - spawner->height / 2;
 		enemySpawners.push_back(spawner);
@@ -793,7 +820,7 @@ void GameLayer::loadMapObject(char character, float x, float y)
 		break;
 	}
 	case 'r': {
-		// Spawner de ChargeEnemy (min√∫scula 'r')
+		// Spawner de ChargeEnemy (min˙scula 'r')
 		EnemySpawner* spawner = new EnemySpawner(x, y, "R", game);
 		spawner->y = spawner->y - spawner->height / 2;
 		enemySpawners.push_back(spawner);
@@ -801,7 +828,7 @@ void GameLayer::loadMapObject(char character, float x, float y)
 		break;
 	}
 	case 't': {
-		// Spawner de ShooterEnemy (min√∫scula 't')
+		// Spawner de ShooterEnemy (min˙scula 't')
 		EnemySpawner* spawner = new EnemySpawner(x, y, "T", game);
 		spawner->y = spawner->y - spawner->height / 2;
 		enemySpawners.push_back(spawner);
@@ -833,6 +860,7 @@ void GameLayer::loadLevel(int level) {
 	currentLevel = level;
 	levelTime = 0.0f;
 	levelCompleted = false;
+	shopHintTimer = 5.0f;
 	levelDuration = getLevelDuration(level);
 	
 	// Limpiar nivel anterior
@@ -841,6 +869,23 @@ void GameLayer::loadLevel(int level) {
 	// Cargar el mapa correspondiente al nivel
 	string mapName = "res/" + to_string(level - 1) + ".txt";
 	loadMap(mapName);
+	
+	// RESTAURAR el estado del jugador si tenemos datos guardados
+	if (hasPlayerData && player != nullptr) {
+		player->money = savedPlayerMoney;
+		player->lives = savedPlayerLives;
+		player->maxLives = savedPlayerMaxLives;
+		player->damage = savedPlayerDamage;
+		player->numberOfShoots = savedPlayerShoots;
+		player->moveSpeed = savedPlayerMoveSpeed;
+		cout << "Estado del jugador restaurado - Dinero: " << player->money << ", Vidas: " << player->lives << ", DISPAROS: " << player->numberOfShoots << endl;
+		cout << "Mejoras restauradas - Vida m·xima: " << player->maxLives << ", DaÒo: " << player->damage << ", Velocidad: " << player->moveSpeed << endl;
+		
+		// Actualizar textos del HUD con los valores restaurados
+		lifePoints->content = to_string(player->lives) + "/" + to_string(player->maxLives);
+		textMoney->content = to_string(player->money);
+		textShoots->content = "Disparos: " + to_string(player->numberOfShoots);
+	}
 	
 	// Actualizar texto de nivel
 	textLevel->content = "NIVEL: " + to_string(currentLevel) + "/" + to_string(totalLevels);
@@ -898,13 +943,42 @@ void GameLayer::clearLevel() {
 }
 
 void GameLayer::nextLevel() {
+	// IMPORTANTE: Guardar el estado del jugador ANTES de cambiar de nivel
+	if (player != nullptr) {
+		// BONUS POR COMPLETAR NIVEL: Dar dinero extra
+		int levelBonus = 100 + (currentLevel * 75); // Nivel 1: 175, Nivel 2: 250, etc.
+		player->money += levelBonus;
+		cout << "°NIVEL COMPLETADO! Bonus de " << levelBonus << " monedas. Dinero total: " << player->money << endl;
+		
+		savedPlayerMoney = player->money;
+		savedPlayerLives = player->lives;
+		savedPlayerMaxLives = player->maxLives;
+		savedPlayerDamage = player->damage;
+		savedPlayerShoots = player->numberOfShoots;
+		savedPlayerMoveSpeed = player->moveSpeed;
+		hasPlayerData = true;
+		cout << "Estado del jugador guardado - Dinero: " << savedPlayerMoney << ", Vidas: " << savedPlayerLives << ", DISPAROS: " << savedPlayerShoots << endl;
+		cout << "Mejoras - Vida m·xima: " << savedPlayerMaxLives << ", DaÒo: " << savedPlayerDamage << ", Velocidad: " << savedPlayerMoveSpeed << endl;
+	}
+	
 	if (currentLevel < totalLevels) {
 		currentLevel++;
-		loadLevel(currentLevel);
-		cout << "¬°Nivel completado! Pasando al nivel " << currentLevel << endl;
+		
+		// NUEVO: Abrir autom·ticamente la tienda entre niveles
+		cout << "°Nivel completado! Abriendo tienda antes del nivel " << currentLevel << endl;
+		game->layer = game->shopLayer;
+		// Pasar el jugador a la tienda
+		if (game->shopLayer != nullptr) {
+			ShopLayer* shop = dynamic_cast<ShopLayer*>(game->shopLayer);
+			if (shop != nullptr) {
+				shop->setPlayer(player);
+				// Indicar a la tienda que debe cargar el siguiente nivel al salir
+				shop->setNextLevel(currentLevel);
+			}
+		}
 	} else {
 		// Juego completado
-		cout << "¬°Has completado todos los niveles!" << endl;
+		cout << "°Has completado todos los niveles!" << endl;
 		// Puedes reiniciar el juego o mostrar pantalla de victoria
 		game->layer = game->inicioLayer;
 	}
@@ -931,3 +1005,4 @@ Enemy* GameLayer::closestEnemy() {
 
 	return closest;
 }
+

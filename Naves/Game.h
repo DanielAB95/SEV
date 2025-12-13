@@ -34,4 +34,5 @@ public:
 	Layer* gameLayer;
 	Layer* gameOverLayer;
 	Layer* inicioLayer;
+	Layer* shopLayer;
 };

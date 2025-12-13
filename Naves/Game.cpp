@@ -2,6 +2,7 @@
 #include "GameLayer.h"
 #include "InicioLayer.h"
 #include "GameOverLayer.h"
+#include "ShopLayer.h"
 
 Game::Game() {
 	if (SDL_Init(SDL_INIT_EVERYTHING) < 0) {
@@ -18,6 +19,7 @@ Game::Game() {
 	inicioLayer = new InicioLayer(this);
 	gameLayer = new GameLayer(this);
 	gameOverLayer = new GameOverLayer(this);
+	shopLayer = new ShopLayer(this);
 	layer = inicioLayer;
 
 	// fuentes

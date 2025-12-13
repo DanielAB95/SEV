@@ -22,4 +22,14 @@ public:
 	int numberOfShoots = 20;
 	int lives;
 	int money; // Dinero recolectado
+	
+	// STATS DEL JUGADOR
+	int maxLives;
+	int damage;
+	float moveSpeed;
+	
+	// Métodos para mejorar stats
+	void upgradeHealth();
+	void upgradeDamage();
+	void upgradeSpeed();
 };

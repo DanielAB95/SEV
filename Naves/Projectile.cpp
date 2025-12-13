@@ -5,6 +5,7 @@ Projectile::Projectile(float xTarget, float yTarget, float x, float y, Game* gam
 {
     this->xTarget = xTarget;
     this->yTarget = yTarget;
+    this->damage = 1; // Valor por defecto, se actualizará desde Player::shoot
 
     // Calculamos el vector hacia el objetivo
     float dx = xTarget - x;
