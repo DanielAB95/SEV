@@ -20,7 +20,7 @@ FlamethrowerWeapon::FlamethrowerWeapon(Game* game) : Weapon(WeaponType::FLAMETHR
 	coneWidth = 80.0f;
 	damagePerFrame = 1;
 	damageTimer = 0;
-	damageInterval = 5; // Daño cada 5 frames
+	damageInterval = 8; // Daño cada 8 frames (50% más lento que antes)
 	
 	// Audio específico para el lanzallamas
 	audioFire = Audio::createAudio("res/flamethrower.wav", false);
@@ -85,7 +85,8 @@ std::string FlamethrowerWeapon::getName() {
 }
 
 void FlamethrowerWeapon::draw(float scrollX, float scrollY) {
-	if (isFiring && flameActor != nullptr) {
+	// Solo dibujar si está disparando Y tiene combustible
+	if (isFiring && flameActor != nullptr && ammo > 0) {
 		flameActor->draw(scrollX, scrollY);
 	}
 }

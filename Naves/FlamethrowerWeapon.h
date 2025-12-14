@@ -22,6 +22,9 @@ public:
 	// Método para verificar colisiones con enemigos
 	void checkEnemyCollisions(std::list<Enemy*>* enemies);
 	
+	// Método para desactivar el lanzallamas externamente
+	void stopFiring() { isFiring = false; }
+	
 	Actor* flameActor;
 	bool isFiring;
 	int fuelConsumption;

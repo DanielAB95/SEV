@@ -2,6 +2,8 @@
 #include "ShopLayer.h"
 #include "MeleeSwipeWeapon.h"
 #include "FlamethrowerWeapon.h"
+#include "GrenadeWeapon.h"
+#include "LaserBeamWeapon.h"
 
 GameLayer::GameLayer(Game* game)
 	: Layer(game) {
@@ -120,6 +122,16 @@ void GameLayer::processControls() {
 		// El jugador maneja el disparo internamente usando el arma actual
 		player->shoot(closestEnemy());
 		// Ya no necesitamos agregar proyectiles aquí, cada arma lo hace
+	} else {
+		// NUEVO: Cuando no se presiona ESPACIO, desactivar lanzallamas si está activo
+		Weapon* currentWeapon = player->getCurrentWeapon();
+		if (currentWeapon != nullptr && currentWeapon->type == WeaponType::FLAMETHROWER) {
+			FlamethrowerWeapon* flamethrower = dynamic_cast<FlamethrowerWeapon*>(currentWeapon);
+			if (flamethrower != nullptr) {
+				flamethrower->stopFiring(); // Usar el nuevo método
+				std::cout << "Lanzallamas desactivado - no se presiona ESPACIO" << std::endl;
+			}
+		}
 	}
 	// Eje X
 	if (controlMoveX > 0) {
@@ -620,6 +632,68 @@ void GameLayer::update() {
 			}
 		}
 	}
+	
+	// NUEVO: Colisiones granada con enemigos (ANTES de eliminar)
+	if (specialWeapon != nullptr && specialWeapon->type == WeaponType::GRENADE) {
+		GrenadeWeapon* grenadeWeapon = dynamic_cast<GrenadeWeapon*>(specialWeapon);
+		if (grenadeWeapon != nullptr) {
+			std::cout << "Procesando colisiones granada..." << std::endl;
+			grenadeWeapon->checkExplosionCollisions(&enemies);
+
+			// Verificar si algún enemigo murió por la granada
+			for (auto const& enemy : enemies) {
+				if (enemy->lives <= 0) {
+					bool eInList = std::find(deleteEnemies.begin(),
+						deleteEnemies.end(),
+						enemy) != deleteEnemies.end();
+					if (!eInList) {
+						deleteEnemies.push_back(enemy);
+						// Crear moneda cuando muere el enemigo
+						CoinPowerUp* coin = new CoinPowerUp(enemy->x, enemy->y, enemy->coinReward, game);
+						powerUps.push_back(coin);
+						space->addDynamicActor(coin);
+
+						player->numberOfShoots++; // Dar disparo extra
+						points++;
+						textPoints->content = to_string(points);
+
+						std::cout << "¡Enemigo eliminado por explosión!" << std::endl;
+					}
+				}
+			}
+		}
+	}
+	
+	// NUEVO: Colisiones láser con enemigos (ANTES de eliminar)
+	if (specialWeapon != nullptr && specialWeapon->type == WeaponType::LASER_BEAM) {
+		LaserBeamWeapon* laserWeapon = dynamic_cast<LaserBeamWeapon*>(specialWeapon);
+		if (laserWeapon != nullptr && laserWeapon->isActive) {
+			std::cout << "Procesando colisiones láser..." << std::endl;
+			laserWeapon->checkBeamCollisions(&enemies);
+
+			// Verificar si algún enemigo murió por el láser
+			for (auto const& enemy : enemies) {
+				if (enemy->lives <= 0) {
+					bool eInList = std::find(deleteEnemies.begin(),
+						deleteEnemies.end(),
+						enemy) != deleteEnemies.end();
+					if (!eInList) {
+						deleteEnemies.push_back(enemy);
+						// Crear moneda cuando muere el enemigo
+						CoinPowerUp* coin = new CoinPowerUp(enemy->x, enemy->y, enemy->coinReward, game);
+						powerUps.push_back(coin);
+						space->addDynamicActor(coin);
+
+						player->numberOfShoots++; // Dar disparo extra
+						points++;
+						textPoints->content = to_string(points);
+
+						std::cout << "¡Enemigo vaporizado por láser!" << std::endl;
+					}
+				}
+			}
+		}
+	}
 
 	for (auto const& delEnemy : deleteEnemies) {
 		// Actualizar contadores de spawners
@@ -790,6 +864,20 @@ void GameLayer::draw() {
 		FlamethrowerWeapon* flamethrowerWeapon = dynamic_cast<FlamethrowerWeapon*>(drawWeapon);
 		if (flamethrowerWeapon != nullptr) {
 			flamethrowerWeapon->draw(scrollX, scrollY);
+		}
+	}
+	// Renderizar las granadas si están activas
+	if (drawWeapon != nullptr && drawWeapon->type == WeaponType::GRENADE) {
+		GrenadeWeapon* grenadeWeapon = dynamic_cast<GrenadeWeapon*>(drawWeapon);
+		if (grenadeWeapon != nullptr) {
+			grenadeWeapon->draw(scrollX, scrollY);
+		}
+	}
+	// Renderizar el láser si está activo
+	if (drawWeapon != nullptr && drawWeapon->type == WeaponType::LASER_BEAM) {
+		LaserBeamWeapon* laserWeapon = dynamic_cast<LaserBeamWeapon*>(drawWeapon);
+		if (laserWeapon != nullptr) {
+			laserWeapon->draw(scrollX, scrollY);
 		}
 	}
 	
