@@ -9,7 +9,7 @@ MeleeSwipeWeapon::MeleeSwipeWeapon(Game* game) : Weapon(WeaponType::MELEE_SWIPE,
 	currentCooldown = 0;
 	ammo = 999;
 	maxAmmo = 999;
-	damage = 25;
+	damage = 15;
 	unlocked = true; // Ya está desbloqueada para testing
 	
 	swipeActor = new Actor("res/melee_swipe.png", 0, 0, 80, 80, game);
@@ -58,6 +58,8 @@ void MeleeSwipeWeapon::fire(Player* player, float targetX, float targetY) {
 	}
 	
 	std::cout << "¡Arma melé activada! Barrido de " << startAngle << " a " << endAngle << " grados" << std::endl;
+	std::cout << "Posición jugador: (" << playerX << ", " << playerY << ")" << std::endl;
+	std::cout << "Arma configurada con damage = " << damage << std::endl;
 }
 
 void MeleeSwipeWeapon::update() {
@@ -115,9 +117,13 @@ void MeleeSwipeWeapon::checkEnemyCollisions(std::list<Enemy*>* enemies) {
 		
 		// Verificar colisión con el arma
 		if (swipeActor->isOverlap(enemy)) {
-			// Aplicar daño
-			int totalDamage = damage; // El Player.damage se suma en GameLayer
+			std::cout << "COLISIÓN DETECTADA! Enemigo antes: " << enemy->lives << " vidas" << std::endl;
+			
+			// Aplicar daño (arma + daño del jugador)
+			int totalDamage = 20; // Daño balanceado para eliminar enemigo en 2 golpes aprox
 			enemy->lives -= totalDamage;
+			
+			std::cout << "Daño aplicado: " << totalDamage << ", Enemigo después: " << enemy->lives << " vidas" << std::endl;
 			
 			// Aplicar knockback
 			float dx = enemy->x - playerX;
@@ -136,7 +142,9 @@ void MeleeSwipeWeapon::checkEnemyCollisions(std::list<Enemy*>* enemies) {
 			alreadyHit.push_back(enemy);
 			
 			std::cout << "¡Arma melé golpeó a enemigo! Daño: " << totalDamage 
-			          << ", Vidas restantes: " << enemy->lives << std::endl;
+			          << ", Vidas restantes: " << enemy->lives 
+			          << ", Posición enemigo: (" << enemy->x << ", " << enemy->y << ")"
+			          << ", Posición arma: (" << swipeActor->x << ", " << swipeActor->y << ")" << std::endl;
 		}
 	}
 }

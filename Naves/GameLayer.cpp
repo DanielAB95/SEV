@@ -1,6 +1,7 @@
 #include "GameLayer.h"
 #include "ShopLayer.h"
 #include "MeleeSwipeWeapon.h"
+#include "FlamethrowerWeapon.h"
 
 GameLayer::GameLayer(Game* game)
 	: Layer(game) {
@@ -33,6 +34,7 @@ void GameLayer::init() {
 	audioBackground->play();
 
 	points = 0;
+
 	
 	// HUD superior derecha - PUNTOS (estrella + número) - Ajustado para verse completo
 	backgroundPoints = new Actor("res/icono_puntos.png", WIDTH * 0.88, HEIGHT * 0.06, 32, 32, game);
@@ -554,6 +556,71 @@ void GameLayer::update() {
 		}
 	}
 
+	// MOVER AQUÍ: Colisiones arma melé con enemigos (ANTES de eliminar)
+	Weapon* specialWeapon = player->getCurrentWeapon();
+	std::cout << "Weapon check - Current weapon type: " << (int)specialWeapon->type << std::endl;
+	if (specialWeapon != nullptr && specialWeapon->type == WeaponType::MELEE_SWIPE) {
+		MeleeSwipeWeapon* meleeWeapon = dynamic_cast<MeleeSwipeWeapon*>(specialWeapon);
+		if (meleeWeapon != nullptr && meleeWeapon->isActive) {
+			std::cout << "Procesando colisiones arma melé..." << std::endl;
+			meleeWeapon->checkEnemyCollisions(&enemies);
+
+			// Verificar si algún enemigo murió por el arma melé
+			for (auto const& enemy : enemies) {
+				if (enemy->lives <= 0) {
+					bool eInList = std::find(deleteEnemies.begin(),
+						deleteEnemies.end(),
+						enemy) != deleteEnemies.end();
+					if (!eInList) {
+						deleteEnemies.push_back(enemy);
+						// Crear moneda cuando muere el enemigo
+						CoinPowerUp* coin = new CoinPowerUp(enemy->x, enemy->y, enemy->coinReward, game);
+						powerUps.push_back(coin);
+						space->addDynamicActor(coin);
+
+						player->numberOfShoots++; // Dar disparo extra
+						points++;
+						textPoints->content = to_string(points);
+
+						std::cout << "¡Enemigo eliminado con arma melé!" << std::endl;
+					}
+				}
+			}
+		}
+	}
+	
+	// MOVER AQUÍ: Colisiones lanzallamas con enemigos (ANTES de eliminar)
+	if (specialWeapon != nullptr && specialWeapon->type == WeaponType::FLAMETHROWER) {
+		FlamethrowerWeapon* flamethrowerWeapon = dynamic_cast<FlamethrowerWeapon*>(specialWeapon);
+		std::cout << "Arma lanzallamas detectada, isFiring: " << (flamethrowerWeapon ? flamethrowerWeapon->isFiring : false) << std::endl;
+		if (flamethrowerWeapon != nullptr && flamethrowerWeapon->isFiring) {
+			std::cout << "Procesando colisiones lanzallamas..." << std::endl;
+			flamethrowerWeapon->checkEnemyCollisions(&enemies);
+
+			// Verificar si algún enemigo murió por el lanzallamas
+			for (auto const& enemy : enemies) {
+				if (enemy->lives <= 0) {
+					bool eInList = std::find(deleteEnemies.begin(),
+						deleteEnemies.end(),
+						enemy) != deleteEnemies.end();
+					if (!eInList) {
+						deleteEnemies.push_back(enemy);
+						// Crear moneda cuando muere el enemigo
+						CoinPowerUp* coin = new CoinPowerUp(enemy->x, enemy->y, enemy->coinReward, game);
+						powerUps.push_back(coin);
+						space->addDynamicActor(coin);
+
+						player->numberOfShoots++; // Dar disparo extra
+						points++;
+						textPoints->content = to_string(points);
+
+						std::cout << "¡Enemigo quemado por lanzallamas!" << std::endl;
+					}
+				}
+			}
+		}
+	}
+
 	for (auto const& delEnemy : deleteEnemies) {
 		// Actualizar contadores de spawners
 		for (auto const& spawner : enemySpawners) {
@@ -588,9 +655,11 @@ void GameLayer::update() {
 
 	// NUEVO: Colisiones arma melé con enemigos
 	Weapon* meleeWeaponCheck = player->getCurrentWeapon();
+	std::cout << "Weapon check - Current weapon type: " << (int)meleeWeaponCheck->type << std::endl;
 	if (meleeWeaponCheck != nullptr && meleeWeaponCheck->type == WeaponType::MELEE_SWIPE) {
 		MeleeSwipeWeapon* meleeWeapon = dynamic_cast<MeleeSwipeWeapon*>(meleeWeaponCheck);
 		if (meleeWeapon != nullptr && meleeWeapon->isActive) {
+			std::cout << "Procesando colisiones arma melé..." << std::endl;
 			meleeWeapon->checkEnemyCollisions(&enemies);
 
 			// Verificar si algún enemigo murió por el arma melé
@@ -611,6 +680,38 @@ void GameLayer::update() {
 						textPoints->content = to_string(points);
 
 						std::cout << "¡Enemigo eliminado con arma melé!" << std::endl;
+					}
+				}
+			}
+		}
+	}
+	
+	// NUEVO: Colisiones lanzallamas con enemigos
+	if (meleeWeaponCheck != nullptr && meleeWeaponCheck->type == WeaponType::FLAMETHROWER) {
+		FlamethrowerWeapon* flamethrowerWeapon = dynamic_cast<FlamethrowerWeapon*>(meleeWeaponCheck);
+		std::cout << "Arma lanzallamas detectada, isFiring: " << (flamethrowerWeapon ? flamethrowerWeapon->isFiring : false) << std::endl;
+		if (flamethrowerWeapon != nullptr && flamethrowerWeapon->isFiring) {
+			std::cout << "Procesando colisiones lanzallamas..." << std::endl;
+			flamethrowerWeapon->checkEnemyCollisions(&enemies);
+
+			// Verificar si algún enemigo murió por el lanzallamas
+			for (auto const& enemy : enemies) {
+				if (enemy->lives <= 0) {
+					bool eInList = std::find(deleteEnemies.begin(),
+						deleteEnemies.end(),
+						enemy) != deleteEnemies.end();
+					if (!eInList) {
+						deleteEnemies.push_back(enemy);
+						// Crear moneda cuando muere el enemigo
+						CoinPowerUp* coin = new CoinPowerUp(enemy->x, enemy->y, enemy->coinReward, game);
+						powerUps.push_back(coin);
+						space->addDynamicActor(coin);
+
+						player->numberOfShoots++; // Dar disparo extra
+						points++;
+						textPoints->content = to_string(points);
+
+						std::cout << "¡Enemigo quemado por lanzallamas!" << std::endl;
 					}
 				}
 			}
@@ -682,6 +783,13 @@ void GameLayer::draw() {
 		MeleeSwipeWeapon* meleeWeapon = dynamic_cast<MeleeSwipeWeapon*>(drawWeapon);
 		if (meleeWeapon != nullptr) {
 			meleeWeapon->draw(scrollX, scrollY);
+		}
+	}
+	// Renderizar el lanzallamas si está activo
+	if (drawWeapon != nullptr && drawWeapon->type == WeaponType::FLAMETHROWER) {
+		FlamethrowerWeapon* flamethrowerWeapon = dynamic_cast<FlamethrowerWeapon*>(drawWeapon);
+		if (flamethrowerWeapon != nullptr) {
+			flamethrowerWeapon->draw(scrollX, scrollY);
 		}
 	}
 	
