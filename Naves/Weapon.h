@@ -1,6 +1,7 @@
 #pragma once
 #include "Game.h"
 #include "Actor.h"
+#include "Audio.h"
 #include <string>
 #include <list>
 
@@ -41,6 +42,10 @@ public:
 	int maxAmmo;
 	int damage;
 	bool unlocked;
+	
+	// Audio para cada arma
+	Audio* audioFire;
+	int audioFireCooldown;
 
 protected:
 	// Referencias compartidas para crear y gestionar proyectiles

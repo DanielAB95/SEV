@@ -1,5 +1,6 @@
 #include "GameLayer.h"
 #include "ShopLayer.h"
+#include "MeleeSwipeWeapon.h"
 
 GameLayer::GameLayer(Game* game)
 	: Layer(game) {
@@ -585,6 +586,52 @@ void GameLayer::update() {
 	}
 	deleteEnemyProjectiles.clear();
 
+	// NUEVO: Colisiones arma melé con enemigos
+	Weapon* meleeWeaponCheck = player->getCurrentWeapon();
+	if (meleeWeaponCheck != nullptr && meleeWeaponCheck->type == WeaponType::MELEE_SWIPE) {
+		MeleeSwipeWeapon* meleeWeapon = dynamic_cast<MeleeSwipeWeapon*>(meleeWeaponCheck);
+		if (meleeWeapon != nullptr && meleeWeapon->isActive) {
+			meleeWeapon->checkEnemyCollisions(&enemies);
+
+			// Verificar si algún enemigo murió por el arma melé
+			for (auto const& enemy : enemies) {
+				if (enemy->lives <= 0) {
+					bool eInList = std::find(deleteEnemies.begin(),
+						deleteEnemies.end(),
+						enemy) != deleteEnemies.end();
+					if (!eInList) {
+						deleteEnemies.push_back(enemy);
+						// Crear moneda cuando muere el enemigo
+						CoinPowerUp* coin = new CoinPowerUp(enemy->x, enemy->y, enemy->coinReward, game);
+						powerUps.push_back(coin);
+						space->addDynamicActor(coin);
+
+						player->numberOfShoots++; // Dar disparo extra
+						points++;
+						textPoints->content = to_string(points);
+
+						std::cout << "¡Enemigo eliminado con arma melé!" << std::endl;
+					}
+				}
+			}
+		}
+	}
+	
+	// NUEVO: Verificar que los enemigos no salgan del mapa (corrección adicional)
+	const float MAP_MARGIN = 80.0f;
+	const float MAP_MIN_X = MAP_MARGIN;
+	const float MAP_MAX_X = 27 * 32 - MAP_MARGIN; // Ancho del mapa - margen
+	const float MAP_MIN_Y = MAP_MARGIN;  
+	const float MAP_MAX_Y = 27 * 32 - MAP_MARGIN; // Alto del mapa - margen
+	
+	for (auto const& enemy : enemies) {
+		// Corregir posición si está fuera de los límites
+		if (enemy->x < MAP_MIN_X) enemy->x = MAP_MIN_X;
+		if (enemy->x > MAP_MAX_X) enemy->x = MAP_MAX_X;
+		if (enemy->y < MAP_MIN_Y) enemy->y = MAP_MIN_Y;
+		if (enemy->y > MAP_MAX_Y) enemy->y = MAP_MAX_Y;
+	}
+
 	std::cout << "update GameLayer" << endl;
 }
 
@@ -627,6 +674,16 @@ void GameLayer::draw() {
 
 	// 7. JUGADOR (encima de enemigos)
 	player->draw(scrollX, scrollY);
+	
+	// 8. ARMAS ESPECIALES (encima del jugador)
+	// Renderizar el arma melé si está activa
+	Weapon* drawWeapon = player->getCurrentWeapon();
+	if (drawWeapon != nullptr && drawWeapon->type == WeaponType::MELEE_SWIPE) {
+		MeleeSwipeWeapon* meleeWeapon = dynamic_cast<MeleeSwipeWeapon*>(drawWeapon);
+		if (meleeWeapon != nullptr) {
+			meleeWeapon->draw(scrollX, scrollY);
+		}
+	}
 	
 	// 8. HUD (siempre visible encima de todo, sin scroll)
 	// Los elementos del HUD se dibujan sin scroll para que permanezcan fijos en pantalla

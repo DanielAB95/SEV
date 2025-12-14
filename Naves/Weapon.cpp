@@ -13,6 +13,8 @@ Weapon::Weapon(WeaponType type, Game* game) {
 	this->unlocked = false;
 	this->projectileList = nullptr;
 	this->space = nullptr;
+	this->audioFire = nullptr;
+	this->audioFireCooldown = 0;
 }
 
 void Weapon::setProjectileReferences(std::list<Projectile*>* projectileList, Space* space) {

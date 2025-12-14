@@ -13,7 +13,6 @@ public:
 	std::string getName() override;
 	std::string getIconPath() override;
 	
-	std::list<Projectile*>* projectileList;
 	int pelletsPerShot;
 	float spreadAngle;
 };

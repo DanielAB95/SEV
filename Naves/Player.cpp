@@ -22,8 +22,8 @@ Player::Player(float x, float y, Game* game)
 	damage = 10;
 	moveSpeed = 3.0f;
 
-	aMoving = new Animation("res/astronauta.png", width, height,
-		192, 32, 5, 6, game);
+	aMoving = new Animation("res/astronauta.png", static_cast<float>(width), static_cast<float>(height),
+		192.0f, 32.0f, 5, 6, game);
 	animation = aMoving;
 	
 	// Inicializar sistema de armas
@@ -52,15 +52,16 @@ void Player::shoot(Enemy* target) {
 		return; // No se puede disparar con arma bloqueada
 	}
 	
-	// El arma maneja el disparo internamente
+	// El arma maneja el disparo internamente (incluyendo el audio)
 	currentWeapon->fire(this, target->x, target->y);
-	audioShoot->play();
+	// ¡Ya no reproducir audio aquí!
 }
 
 void Player::setWeaponReferences(std::list<Projectile*>* projectileList, Space* space) {
 	// Configurar referencias en todas las armas
-	for (auto weapon : weapons) {
-		weapon->setProjectileReferences(projectileList, space);
+	for (size_t i = 0; i < weapons.size(); i++) {
+		weapons[i]->setProjectileReferences(projectileList, space);
+		cout << "Arma " << i << " (" << weapons[i]->getName() << ") configurada con referencias" << endl;
 	}
 	cout << "Referencias de proyectiles configuradas en todas las armas" << endl;
 }
@@ -105,18 +106,23 @@ void Player::initWeapons() {
 	weapons.push_back(new GrenadeWeapon(game));
 	weapons.push_back(new LaserBeamWeapon(game));
 	
+	// TEMPORAL: Desbloquear algunas armas para testing
+	weapons[1]->unlocked = true; // MeleeSwipeWeapon
+	weapons[2]->unlocked = true; // ShotgunWeapon
+	
 	cout << "Sistema de armas inicializado: " << weapons.size() << " armas creadas" << endl;
+	cout << "Armas desbloqueadas: SimpleShotWeapon, MeleeSwipeWeapon, ShotgunWeapon" << endl;
 }
 
 Weapon* Player::getCurrentWeapon() {
-	if (currentWeaponIndex >= 0 && currentWeaponIndex < weapons.size()) {
+	if (currentWeaponIndex >= 0 && static_cast<size_t>(currentWeaponIndex) < weapons.size()) {
 		return weapons[currentWeaponIndex];
 	}
 	return nullptr;
 }
 
 void Player::switchWeapon(int index) {
-	if (index >= 0 && index < weapons.size()) {
+	if (index >= 0 && static_cast<size_t>(index) < weapons.size()) {
 		currentWeaponIndex = index;
 		if (weapons[index]->unlocked) {
 			cout << "Arma cambiada a: " << weapons[index]->getName() << " (DESBLOQUEADA)" << endl;
@@ -135,6 +141,11 @@ void Player::unlockWeapon(WeaponType type) {
 		}
 	}
 }
+
+
+
+
+
 
 
 
