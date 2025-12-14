@@ -37,18 +37,18 @@ void ShopLayer::init() {
 	background = new Background("res/Tienda.png", WIDTH * 0.5, HEIGHT * 0.5, -1, game);
 	
 	// Título
-	titleText = new Text("=== TIENDA DE MEJORAS ===", WIDTH * 0.5 - 150, HEIGHT * 0.1, game);
+	titleText = new Text("=== TIENDA DE MEJORAS ===", WIDTH * 0.5, HEIGHT * 0.1, game);
 	
 	// Dinero disponible
-	moneyText = new Text("Dinero: 0 monedas", WIDTH * 0.5 - 100, HEIGHT * 0.17, game);
+	moneyText = new Text("Dinero: 0 monedas", WIDTH * 0.5, HEIGHT * 0.17, game);
 	
 	// Instrucciones
 	instructionsText = new Text("W/S: Navegar | ESPACIO: Comprar | ESC: Continuar", 
-	                            WIDTH * 0.5 - 260, HEIGHT * 0.9, game);
+	                            WIDTH * 0.5, HEIGHT * 0.9, game);
 	
 	// Texto de salida
 	exitText = new Text("Presiona ESC para continuar al siguiente nivel", 
-	                    WIDTH * 0.5 - 220, HEIGHT * 0.95, game);
+	                    WIDTH * 0.5, HEIGHT * 0.95, game);
 	
 	// Crear selector visual
 	selector = new Actor("res/AlienSelector.png", 0, 0, 64, 64, game);

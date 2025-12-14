@@ -975,7 +975,7 @@ void GameLayer::calculateScroll() {
 
 float GameLayer::getLevelDuration(int level) {
 	switch(level) {
-		case 1: return 30.0f;  // 30 segundos
+		case 1: return 1.0f;  // 30 segundos
 		case 2: return 45.0f;  // 45 segundos
 		case 3: return 60.0f;  // 60 segundos
 		case 4: return 75.0f;  // 75 segundos

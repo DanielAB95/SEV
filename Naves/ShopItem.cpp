@@ -23,9 +23,9 @@ ShopItem::ShopItem(ItemType type, int baseCost, float x, float y, Game* game) {
 	descriptionText = new Text(getItemDescription(), x - 150, y + 5, game);
 	descriptionText->content = getItemDescription();
 	
-	levelText = new Text("Nivel: 0/" + to_string(maxLevel), x - 150, y + 30, game);
+	levelText = new Text("0/" + to_string(maxLevel), x - 150, y + 30, game);
 	
-	costText = new Text("Coste: " + to_string(cost) + " monedas", x + 60, y, game);
+	costText = new Text(to_string(cost) + " monedas", x + 60, y, game);
 }
 
 ShopItem::~ShopItem() {
@@ -42,7 +42,7 @@ std::string ShopItem::getItemName() {
 		case ItemType::HEALTH_UPGRADE:
 			return "Mejora de Vida";
 		case ItemType::DAMAGE_UPGRADE:
-			return "Mejora de Dano";
+			return "Mejora de Daño";
 		case ItemType::SPEED_UPGRADE:
 			return "Mejora de Velocidad";
 		case ItemType::MAX_AMMO_UPGRADE:
@@ -57,7 +57,7 @@ std::string ShopItem::getItemDescription() {
 		case ItemType::HEALTH_UPGRADE:
 			return "+10 Vida Maxima";
 		case ItemType::DAMAGE_UPGRADE:
-			return "+5 Dano";
+			return "+5 Daño";
 		case ItemType::SPEED_UPGRADE:
 			return "+0.5 Velocidad";
 		case ItemType::MAX_AMMO_UPGRADE:
@@ -88,12 +88,12 @@ void ShopItem::updateCost() {
 }
 
 void ShopItem::updateTexts() {
-	levelText->content = "Nivel: " + to_string(level) + "/" + to_string(maxLevel);
-	costText->content = "Coste: " + to_string(cost) + " monedas";
+	levelText->content = to_string(level) + "/" + to_string(maxLevel);
+	costText->content = to_string(cost) + " monedas";
 	
 	// Cambiar color si está al máximo
 	if (level >= maxLevel) {
-		costText->content = "MAXIMO NIVEL";
+		costText->content = "MÁXIMO";
 	}
 }
 
@@ -139,33 +139,32 @@ bool ShopItem::purchase(Player* player) {
 }
 
 void ShopItem::draw(float offsetY) {
-	float finalY = y + offsetY;
 	
 	// Dibujar fondo
 	background->x = x;
-	background->y = finalY;
+	background->y = y;
 	background->draw();
 	
 	// Dibujar icono
-	icon->x = x - 220;
-	icon->y = finalY;
+	icon->x = x - 200;
+	icon->y = y;
 	icon->draw();
 	
 	// Dibujar textos
-	nameText->x = x - 150;
-	nameText->y = finalY - 25;
+	nameText->x = x;
+	nameText->y = y - 27;
 	nameText->draw();
 	
-	descriptionText->x = x - 150;
-	descriptionText->y = finalY + 5;
+	descriptionText->x = x;
+	descriptionText->y = y;
 	descriptionText->draw();
 	
-	levelText->x = x - 150;
-	levelText->y = finalY + 30;
+	levelText->x = x;
+	levelText->y = y + 27;
 	levelText->draw();
 	
-	costText->x = x + 60;
-	costText->y = finalY;
+	costText->x = x + 160;
+	costText->y = y + 27;
 	costText->draw();
 }
 
