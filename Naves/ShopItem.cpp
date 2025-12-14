@@ -75,9 +75,9 @@ std::string ShopItem::getItemIcon() {
 		case ItemType::GUN_SLOT:
 			return "res/disparo_jugador.png";
 		case ItemType::SPEED_UPGRADE:
-			return "res/Astronauta.png"; // Usar astronauta como icono de velocidad
+			return "res/FlechaSeleccion.png"; // Usar astronauta como icono de velocidad
 		case ItemType::RELOAD_UPGRADE:
-			return "res/recolectable.png"; // Usar recolectable como munición
+			return "res/icono_recolectable.png"; // Usar recolectable como munición
 		default:
 			return "res/moneda.png";
 	}
