@@ -171,6 +171,7 @@
     <ClCompile Include="GrenadeWeapon.cpp" />
     <ClCompile Include="InicioLayer.cpp" />
     <ClCompile Include="LaserBeamWeapon.cpp" />
+    <ClCompile Include="LaserBeamWeapon_new.cpp" />
     <ClCompile Include="Layer.cpp" />
     <ClCompile Include="LifeSpawner.cpp" />
     <ClCompile Include="LifesPowerUp.cpp" />

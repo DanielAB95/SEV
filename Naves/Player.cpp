@@ -108,10 +108,12 @@ void Player::initWeapons() {
 	
 	// TEMPORAL: Desbloquear algunas armas para testing
 	weapons[1]->unlocked = true; // MeleeSwipeWeapon
-	weapons[2]->unlocked = true; // ShotgunWeapon
+	weapons[3]->unlocked = true; // FlamethrowerWeapon
+	weapons[4]->unlocked = true; // GrenadeWeapon
+	weapons[5]->unlocked = true; // LaserBeamWeapon
 	
 	cout << "Sistema de armas inicializado: " << weapons.size() << " armas creadas" << endl;
-	cout << "Armas desbloqueadas: SimpleShotWeapon, MeleeSwipeWeapon, ShotgunWeapon" << endl;
+	cout << "Armas desbloqueadas: SimpleShotWeapon, MeleeSwipeWeapon, ShotgunWeapon, FlamethrowerWeapon, GrenadeWeapon, LaserBeamWeapon" << endl;
 }
 
 Weapon* Player::getCurrentWeapon() {
