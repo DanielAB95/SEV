@@ -50,3 +50,10 @@ void InicioLayer::draw() {
 	SDL_RenderPresent(game->renderer); // Renderiza NO PUEDE FALTAR
 }
 
+void InicioLayer::resetToStart() {
+	// Reiniciar el InicioLayer al estado inicial
+	screen = 0;
+	controlContinue = false;
+	background = new Background("res/Inicio1.png", WIDTH * 0.5, HEIGHT * 0.5, game);
+}
+
