@@ -20,6 +20,7 @@ public:
 	void setPlayer(Player* player);
 	void setNextLevel(int level); // Nuevo: establecer el siguiente nivel a cargar
 	void resetBoughts();
+	void resetShopItemsCompletely(); // NUEVO: Método para resetear completamente los items de la tienda
 	
 	
 private:
