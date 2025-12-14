@@ -20,6 +20,7 @@
 #include "EnemySpawner.h"
 #include "Tile.h"
 #include "SuperEnemySpawner.h"
+#include "Pad.h"
 #include <list>
 #include <fstream> // Leer ficheros
 #include <sstream> // Leer líneas / String
@@ -36,6 +37,7 @@ public:
 	void update() override;
 	void draw() override;
 	void keysToControls(SDL_Event event);
+	void mouseToControls(SDL_Event event); // Nuevo método para controles táctiles
 	void loadMap(string name);
 	void loadMapObject(char character, float x, float y);
 	void calculateScroll();
@@ -100,6 +102,10 @@ public:
 	bool controlShoot = false;
 	int controlMoveY = 0;
 	int controlMoveX = 0;
+
+	// Interfaz táctil
+	Pad* pad; // Joystick virtual para movimiento
+	Actor* buttonShoot; // Botón de disparo
 
 	list<Enemy*> enemies;
 	list<Projectile*> projectiles;

@@ -105,6 +105,10 @@ void GameLayer::init() {
 
 	loadMap("res/0.txt"); 
 
+	// Inicializar controles táctiles
+	pad = new Pad(WIDTH * 0.15, HEIGHT * 0.80, game);
+	buttonShoot = new Actor("res/boton_disparo.png", WIDTH * 0.75, HEIGHT * 0.83, 100, 100, game);
+
 	// Actualizar los textos con los valores iniciales del jugador
 	lifePoints->content = to_string(player->lives) + "/" + to_string(player->maxLives);
 	textMoney->content = to_string(player->money);
@@ -116,11 +120,12 @@ void GameLayer::init() {
 }
 
 void GameLayer::processControls() {
-	// obtener controles
-	SDL_Event event;
-	while (SDL_PollEvent(&event)) {
-		keysToControls(event);
-	}
+// obtener controles
+SDL_Event event;
+while (SDL_PollEvent(&event)) {
+keysToControls(event);
+mouseToControls(event); // NUEVO: Manejar controles táctiles
+}
 	// procesar controles
 	// Disparar
 	if (controlShoot) {
@@ -243,6 +248,70 @@ void GameLayer::keysToControls(SDL_Event event) {
 		case SDLK_SPACE: // dispara
 			controlShoot = false;
 			break;
+		}
+	}
+}
+
+void GameLayer::mouseToControls(SDL_Event event) {
+	// Escalado de coordenadas para diferentes resoluciones
+	float motionX = event.motion.x;
+	float motionY = event.motion.y;
+	
+	// Ajustar coordenadas si hay escalado
+	if (game->scaleLower != 0) {
+		motionX = event.motion.x / game->scaleLower;
+		motionY = event.motion.y / game->scaleLower;
+	}
+
+	// --- CLIC (DOWN) ---
+	if (event.type == SDL_MOUSEBUTTONDOWN) {
+		// Pad: Activar y calcular dirección inicial
+		if (pad->containsPoint(motionX, motionY)) {
+			pad->clicked = true;
+			controlMoveX = pad->getOrientationX(motionX);
+			controlMoveY = pad->getOrientationY(motionY);
+		}
+		// Disparo: Activar
+		if (buttonShoot->containsPoint(motionX, motionY)) {
+			controlShoot = true;
+		}
+	}
+
+	// --- MOVIMIENTO (MOTION) ---
+	if (event.type == SDL_MOUSEMOTION) {
+		// Pad: Solo si está clickado
+		if (pad->clicked && pad->containsPoint(motionX, motionY)) {
+			controlMoveX = pad->getOrientationX(motionX);
+			controlMoveY = pad->getOrientationY(motionY);
+
+			// Zona muerta (Deadzone) para evitar movimientos involuntarios
+			if (controlMoveX > -20 && controlMoveX < 20) controlMoveX = 0;
+			if (controlMoveY > -20 && controlMoveY < 20) controlMoveY = 0;
+		} 
+		else {
+			// Si sale del pad o no está clickado, detener
+			pad->clicked = false;
+			controlMoveX = 0;
+			controlMoveY = 0;
+		}
+
+		// Disparo: Si se sale del botón, desactivar
+		if (buttonShoot->containsPoint(motionX, motionY) == false) {
+			controlShoot = false;
+		}
+	}
+
+	// --- LEVANTAR (UP) ---
+	if (event.type == SDL_MOUSEBUTTONUP) {
+		// Pad: Soltar detiene el movimiento
+		if (pad->containsPoint(motionX, motionY) || pad->clicked) {
+			pad->clicked = false;
+			controlMoveX = 0;
+			controlMoveY = 0;
+		}
+		// Disparo: Soltar desactiva
+		if (buttonShoot->containsPoint(motionX, motionY)) {
+			controlShoot = false;
 		}
 	}
 }
@@ -882,6 +951,10 @@ void GameLayer::draw() {
 	// Dibujar selector de arma actual
 	weaponSelector->draw(0, 0);
 
+	// Dibujar controles táctiles (encima de todo)
+	pad->draw(0, 0);
+	buttonShoot->draw(0, 0);
+
 	SDL_RenderPresent(game->renderer); // Renderiza
 }
 
@@ -1255,6 +1328,8 @@ void GameLayer::clearLevel() {
 		space->removeDynamicActor(player);
 		// NO hacer delete player aquí - se manejará en loadLevel
 	}
+	
+	// NOTA: NO eliminar pad y buttonShoot aquí porque se reutilizan entre niveles
 }
 
 void GameLayer::nextLevel() {
