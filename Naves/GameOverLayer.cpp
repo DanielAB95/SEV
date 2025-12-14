@@ -1,4 +1,6 @@
 #include "GameOverLayer.h"
+#include "GameLayer.h" // NUEVO: Para acceder al método de reinicio
+#include "InicioLayer.h" // NUEVO: Para reiniciar la capa de inicio
 
 GameOverLayer::GameOverLayer(Game* game) : Layer(game) {
 	init();
@@ -18,7 +20,19 @@ void GameOverLayer::processControls() {
 	}
 	//procesar controles, solo tiene uno
 	if (controlContinue) {
-		// Cambia la capa
+		// NUEVO: Reiniciar GameLayer completamente antes de cambiar capas
+		GameLayer* gameLayer = dynamic_cast<GameLayer*>(game->gameLayer);
+		if (gameLayer != nullptr) {
+			gameLayer->resetGameToInitialState();
+		}
+		
+		// NUEVO: Reiniciar también el InicioLayer
+		InicioLayer* inicioLayer = dynamic_cast<InicioLayer*>(game->inicioLayer);
+		if (inicioLayer != nullptr) {
+			inicioLayer->resetToStart();
+		}
+		
+		// Cambiar a la capa de inicio
 		game->layer = game->inicioLayer;
 		game->layer->init();
 	}

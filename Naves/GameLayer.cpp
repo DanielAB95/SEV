@@ -1,5 +1,6 @@
 #include "GameLayer.h"
 #include "ShopLayer.h"
+#include "InicioLayer.h" // NUEVO: Para reiniciar la capa de inicio
 #include "MeleeSwipeWeapon.h"
 #include "FlamethrowerWeapon.h"
 #include "GrenadeWeapon.h"
@@ -282,7 +283,6 @@ void GameLayer::mouseToControls(SDL_Event event) {
 		for (int i = 0; i < weaponSwitchButtons.size(); i++) {
 			if (weaponSwitchButtons[i]->containsPoint(motionX, motionY)) {
 				player->switchWeapon(i);
-				std::cout << "Cambiando a arma " << (i + 1) << " por toque" << std::endl;
 				break;
 			}
 		}
@@ -439,7 +439,6 @@ void GameLayer::update() {
 				enemyProj->x = oldX;
 				enemyProj->y = oldY;
 				deleteEnemyProjectilesBounce.push_back(enemyProj);
-				cout << "Proyectil alcanzó máximo de rebotes (" << enemyProj->maxBounces << ") - Eliminando" << endl;
 			} else {
 				// Hacer rebotar según la dirección de colisión
 				bool didBounce = false;
@@ -528,7 +527,6 @@ void GameLayer::update() {
 			powerUps.push_back(lifePowerUp);
 			space->addDynamicActor(lifePowerUp);
 			spawner->resetTimer();
-			cout << "Spawner generó un corazón en posición (" << spawner->x << ", " << spawner->y << ")" << endl;
 		}
 	}
 	
@@ -558,8 +556,6 @@ void GameLayer::update() {
 				space->addDynamicActor(newEnemy);
 				spawner->currentEnemies++;
 				spawner->resetTimer();
-				cout << "Spawner generó enemigo tipo " << spawner->enemyType 
-				     << " en posición (" << spawner->x << ", " << spawner->y << ")" << endl;
 			}
 		}
 	}
@@ -589,8 +585,6 @@ void GameLayer::update() {
 				}
 			} else {
 				// Super enemigos NO se eliminan al tocar - siguen atacando
-				std::cout << "¡SUPER ENEMIGO golpeó al jugador! Daño: " << enemy->damage 
-				          << " - NO se elimina, sigue en combate!" << std::endl;
 			}
 			
 			if (player->lives <= 0) {
@@ -624,7 +618,6 @@ void GameLayer::update() {
 
 	for (auto const& powerUp : powerUps) {
 		if (player->isOverlap(powerUp)) {
-			cout << "¡Colision con power-up detectada!" << endl;
 			powerUp->effect(player);
 			bool pInList = std::find(deletePowerUps.begin(),
 				deletePowerUps.end(),
@@ -718,8 +711,6 @@ void GameLayer::update() {
 						player->numberOfShoots++; // Dar disparo extra
 						points++;
 						textPoints->content = to_string(points);
-
-						std::cout << "¡Enemigo eliminado con arma melé!" << std::endl;
 					}
 				}
 			}
@@ -748,8 +739,6 @@ void GameLayer::update() {
 						player->numberOfShoots++; // Dar disparo extra
 						points++;
 						textPoints->content = to_string(points);
-
-						std::cout << "¡Enemigo quemado por lanzallamas!" << std::endl;
 					}
 				}
 			}
@@ -778,8 +767,6 @@ void GameLayer::update() {
 						player->numberOfShoots++; // Dar disparo extra
 						points++;
 						textPoints->content = to_string(points);
-
-						std::cout << "¡Enemigo eliminado por explosión!" << std::endl;
 					}
 				}
 			}
@@ -808,8 +795,6 @@ void GameLayer::update() {
 						player->numberOfShoots++; // Dar disparo extra
 						points++;
 						textPoints->content = to_string(points);
-
-						std::cout << "¡Enemigo vaporizado por láser!" << std::endl;
 					}
 				}
 			}
@@ -1001,14 +986,11 @@ void GameLayer::loadMap(string name) {
 			mapWidth = line.length() * 32; // Ancho del mapa en pixels
 			// Por carácter (en cada línea)
 			for (int j = 0; j<line.length(); j++) {
-				streamLine >> character; // Leer character 
-				cout << character;
+				streamLine >> character; // Leer character
 				float x = 32 / 2 + j * 32; // x central
 				float y = 32 + i * 32; // y suelo
 				loadMapObject(character, x, y);
 			}
-
-			cout << character << endl;
 		}
 	}
 	streamFile.close();
@@ -1278,8 +1260,6 @@ void GameLayer::loadLevel(int level) {
 		player->numberOfShoots = savedPlayerShoots;
 		player->moveSpeed = savedPlayerMoveSpeed;
 		player->weapons = savedPlayerWeapons;
-		cout << "Estado del jugador restaurado - Dinero: " << player->money << ", Vidas: " << player->lives << ", DISPAROS: " << player->numberOfShoots << endl;
-		cout << "Mejoras restauradas - Vida máxima: " << player->maxLives << ", Daño: " << player->damage << ", Velocidad: " << player->moveSpeed << endl;
 		
 		// Actualizar textos del HUD con los valores restaurados
 		lifePoints->content = to_string(player->lives) + "/" + to_string(player->maxLives);
@@ -1366,7 +1346,6 @@ void GameLayer::nextLevel() {
 		// BONUS POR COMPLETAR NIVEL: Dar dinero extra
 		int levelBonus = 100 + (currentLevel * 75); // Nivel 1: 175, Nivel 2: 250, etc.
 		player->money += levelBonus;
-		cout << "¡NIVEL COMPLETADO! Bonus de " << levelBonus << " monedas. Dinero total: " << player->money << endl;
 		
 		savedPlayerMoney = player->money;
 		savedPlayerLives = player->lives;
@@ -1376,15 +1355,12 @@ void GameLayer::nextLevel() {
 		savedPlayerMoveSpeed = player->moveSpeed;
 		savedPlayerWeapons = player->weapons;
 		hasPlayerData = true;
-		cout << "Estado del jugador guardado - Dinero: " << savedPlayerMoney << ", Vidas: " << savedPlayerLives << ", DISPAROS: " << savedPlayerShoots << endl;
-		cout << "Mejoras - Vida máxima: " << savedPlayerMaxLives << ", Daño: " << savedPlayerDamage << ", Velocidad: " << savedPlayerMoveSpeed << endl;
 	}
 	
 	if (currentLevel < totalLevels) {
 		currentLevel++;
 		
 		// NUEVO: Abrir automáticamente la tienda entre niveles
-		cout << "¡Nivel completado! Abriendo tienda antes del nivel " << currentLevel << endl;
 		game->layer = game->shopLayer;
 		// Pasar el jugador a la tienda
 		if (game->shopLayer != nullptr) {
@@ -1397,9 +1373,16 @@ void GameLayer::nextLevel() {
 			}
 		}
 	} else {
-		// Juego completado
-		cout << "¡Has completado todos los niveles!" << endl;
-		// Puedes reiniciar el juego o mostrar pantalla de victoria
+		// Juego completado - reiniciar completamente
+		cout << "¡Juego completado! Reiniciando..." << endl;
+		resetGameToInitialState();
+		
+		// También reiniciar el InicioLayer
+		InicioLayer* inicioLayer = dynamic_cast<InicioLayer*>(game->inicioLayer);
+		if (inicioLayer != nullptr) {
+			inicioLayer->resetToStart();
+		}
+		
 		game->layer = game->inicioLayer;
 	}
 }
@@ -1450,3 +1433,46 @@ void GameLayer::updateSuperEnemySpawners() {
 }
 
 
+void GameLayer::resetGameToInitialState() {
+	// LIMPIAR TODO EL ESTADO DEL JUEGO PARA EMPEZAR DESDE CERO
+	
+	// 1. Limpiar nivel actual
+	clearLevel();
+	
+	// 2. Reiniciar variables de sistema de niveles
+	currentLevel = 1;
+	totalLevels = 5;
+	levelTime = 0.0f;
+	levelCompleted = false;
+	shopHintTimer = 5.0f;
+	levelDuration = getLevelDuration(currentLevel);
+	
+	// 3. Reiniciar variables de estado del jugador guardado
+	savedPlayerMoney = 0;
+	savedPlayerLives = 0;
+	savedPlayerMaxLives = 0;
+	savedPlayerDamage = 0;
+	savedPlayerShoots = 20;
+	savedPlayerMoveSpeed = 0;
+	savedPlayerWeapons.clear();
+	hasPlayerData = false;
+	
+	// 4. Reiniciar puntos
+	points = 0;
+	
+	// 5. Reiniciar timers de spawn
+	newBasicEnemyTime = 0;
+	newSMovingEnemyTime = 0;
+	newLifePowerUpTime = 0;
+	newShootPowerUptime = 0;
+	
+	// 6. Reiniciar controles
+	controlShoot = false;
+	controlMoveY = 0;
+	controlMoveX = 0;
+	
+	// 7. Reinicializar completamente - como si fuera la primera vez
+	init();
+	
+	cout << "¡Juego reiniciado completamente al estado inicial!" << endl;
+}

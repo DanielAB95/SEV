@@ -12,6 +12,7 @@ public:
 	void draw() override;
 	void processControls() override;
 	void keysToControls(SDL_Event event);
+	void resetToStart(); // NUEVO: Método para reiniciar al estado inicial
 	bool controlContinue;
 	Background* background;
 	Actor* button;

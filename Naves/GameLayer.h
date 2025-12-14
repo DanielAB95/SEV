@@ -63,6 +63,7 @@ public:
 	void nextLevel();
 	float getLevelDuration(int level);
 	void clearLevel();
+	void resetGameToInitialState(); // NUEVO: Método para reiniciar completamente el juego
 
 	Enemy* closestEnemy();
 	
