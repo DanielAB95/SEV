@@ -33,7 +33,7 @@ void GameLayer::init() {
 	space = new Space(0);
 	scrollX = 0;
 	scrollY = 0;
-	audioBackground = Audio::createAudio("res/musica_ambiente.mp3", true);
+	audioBackground = Audio::createAudio("res/musica_ambiente.wav", true);
 	audioBackground->play();
 
 	points = 0;

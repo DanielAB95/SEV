@@ -5,17 +5,17 @@
 #include <iostream>
 
 ShotgunWeapon::ShotgunWeapon(Game* game) : Weapon(WeaponType::SHOTGUN, game) {
-	cooldown = 40;
+	cooldown = 28;
 	currentCooldown = 0;
 	ammo = 50;
 	maxAmmo = 50;
-	damage = 8;
+	damage = 12;
 	unlocked = false;
 	pelletsPerShot = 3;
 	spreadAngle = 15.0f;
 	
 	// Audio específico para esta arma - puede ser diferente
-	audioFire = Audio::createAudio("res/SonidoEscopeta.wav", false); // Puedes cambiar por "res/shotgun_fire.wav"
+	audioFire = Audio::createAudio("res/Escopeta.wav", false);
 	audioFireCooldown = 0;
 	
 	std::cout << "ShotgunWeapon creada" << std::endl;

@@ -9,7 +9,7 @@ LaserBeamWeapon::LaserBeamWeapon(Game* game) : Weapon(WeaponType::LASER_BEAM, ga
 	currentCooldown = 0;
 	ammo = 10;
 	maxAmmo = 10;
-	damage = 15;
+	damage = 30;
 	unlocked = false; // Desbloqueado para testing
 	beamWidth = 20.0f; // Ancho del rayo para detección de colisiones
 	

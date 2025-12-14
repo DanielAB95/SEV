@@ -4,10 +4,10 @@
 #include <iostream>
 
 SimpleShotWeapon::SimpleShotWeapon(Game* game) : Weapon(WeaponType::SIMPLE_SHOT, game) {
-	cooldown = 22;
+	cooldown = 16;
 	currentCooldown = 0;
-	ammo = 100;
-	maxAmmo = 100;
+	ammo = 200;
+	maxAmmo = 200;
 	damage = 10;
 	unlocked = true;
 	

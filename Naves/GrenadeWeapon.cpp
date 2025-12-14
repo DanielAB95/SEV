@@ -93,11 +93,11 @@ bool GrenadeProjectile::hasExploded() {
 }
 
 GrenadeWeapon::GrenadeWeapon(Game* game) : Weapon(WeaponType::GRENADE, game) {
-	cooldown = 60;
+	cooldown = 45;
 	currentCooldown = 0;
 	ammo = 20;
 	maxAmmo = 20;
-	damage = 30;
+	damage = 50;
 	unlocked = false; // Desbloqueado para testing
 	explosionRadius = 80;
 	

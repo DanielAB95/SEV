@@ -10,7 +10,7 @@ FlamethrowerWeapon::FlamethrowerWeapon(Game* game) : Weapon(WeaponType::FLAMETHR
 	currentCooldown = 0;
 	ammo = 300;
 	maxAmmo = 300;
-	damage = 1;
+	damage = 2;
 	unlocked = false; // Desbloqueado para testing
 	
 	flameActor = new Actor("res/Flames.png", 0, 0, 100, 60, game);

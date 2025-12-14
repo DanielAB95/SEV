@@ -5,11 +5,11 @@
 #include <iostream>
 
 MeleeSwipeWeapon::MeleeSwipeWeapon(Game* game) : Weapon(WeaponType::MELEE_SWIPE, game) {
-	cooldown = 30;
+	cooldown = 25;
 	currentCooldown = 0;
 	ammo = 999;
 	maxAmmo = 999;
-	damage = 15;
+	damage = 20;
 	unlocked = true; // Ya está desbloqueada para testing
 	
 	swipeActor = new Actor("res/Sword.png", 0, 0, 80, 80, game);
