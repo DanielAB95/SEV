@@ -20,6 +20,7 @@ public:
 	bool purchase(Player* player);
 	void draw(float offsetY = 0);
 	void updatePosition(float x, float y);
+	void updateTexts(); // NUEVO: Hacer público para permitir actualización externa
 	
 	ItemType type;
 	int cost;
@@ -43,8 +44,7 @@ public:
 	bool bought = false;
 	
 private:
-	void updateCost();
-	void updateTexts();
+void updateCost();
 	std::string getItemName();
 	std::string getItemDescription();
 	std::string getItemIcon();

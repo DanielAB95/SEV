@@ -270,3 +270,15 @@ void ShopLayer::resetBoughts() {
 	}
 }
 
+void ShopLayer::resetShopItemsCompletely() {
+	// Resetear completamente todos los items de la tienda a su estado inicial
+	for (auto const& shopItem : shopItems) {
+		shopItem->bought = false;
+		shopItem->level = 0;
+		shopItem->cost = shopItem->baseCost;
+		
+		// Actualizar los textos visuales
+		shopItem->updateTexts();
+	}
+}
+

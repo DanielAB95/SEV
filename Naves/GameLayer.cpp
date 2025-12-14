@@ -1367,7 +1367,7 @@ void GameLayer::nextLevel() {
 			ShopLayer* shop = dynamic_cast<ShopLayer*>(game->shopLayer);
 			if (shop != nullptr) {
 				shop->setPlayer(player);
-				shop->resetBoughts();
+				shop->resetBoughts(); // Solo resetear compras entre niveles, mantener progreso
 				// Indicar a la tienda que debe cargar el siguiente nivel al salir
 				shop->setNextLevel(currentLevel);
 			}
@@ -1376,6 +1376,12 @@ void GameLayer::nextLevel() {
 		// Juego completado - reiniciar completamente
 		cout << "¡Juego completado! Reiniciando..." << endl;
 		resetGameToInitialState();
+		
+		// NUEVO: Resetear completamente la tienda cuando se completa el juego
+		ShopLayer* shop = dynamic_cast<ShopLayer*>(game->shopLayer);
+		if (shop != nullptr) {
+			shop->resetShopItemsCompletely();
+		}
 		
 		// También reiniciar el InicioLayer
 		InicioLayer* inicioLayer = dynamic_cast<InicioLayer*>(game->inicioLayer);

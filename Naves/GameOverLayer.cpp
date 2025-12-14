@@ -1,6 +1,7 @@
 #include "GameOverLayer.h"
 #include "GameLayer.h" // NUEVO: Para acceder al método de reinicio
 #include "InicioLayer.h" // NUEVO: Para reiniciar la capa de inicio
+#include "ShopLayer.h" // NUEVO: Para resetear la tienda
 
 GameOverLayer::GameOverLayer(Game* game) : Layer(game) {
 	init();
@@ -24,6 +25,12 @@ void GameOverLayer::processControls() {
 		GameLayer* gameLayer = dynamic_cast<GameLayer*>(game->gameLayer);
 		if (gameLayer != nullptr) {
 			gameLayer->resetGameToInitialState();
+		}
+		
+		// NUEVO: Resetear completamente la tienda cuando se muere
+		ShopLayer* shop = dynamic_cast<ShopLayer*>(game->shopLayer);
+		if (shop != nullptr) {
+			shop->resetShopItemsCompletely();
 		}
 		
 		// NUEVO: Reiniciar también el InicioLayer
