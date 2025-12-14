@@ -153,11 +153,14 @@
     <ClCompile Include="SimpleShotWeapon.cpp">
       <Filter>Archivos de origen\Actores\Armas</Filter>
     </ClCompile>
-    <ClCompile Include="LaserBeamWeapon_new.cpp">
-      <Filter>Archivos de origen</Filter>
-    </ClCompile>
     <ClCompile Include="GrenadeWeapon.cpp">
       <Filter>Archivos de origen\Actores\Armas</Filter>
+    </ClCompile>
+    <ClCompile Include="Pad.cpp">
+      <Filter>Archivos de origen</Filter>
+    </ClCompile>
+    <ClCompile Include="SuperEnemySpawner.cpp">
+      <Filter>Archivos de origen\Actores\Enemigos</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -274,6 +277,12 @@
     </ClInclude>
     <ClInclude Include="ShopItem.h">
       <Filter>Archivos de encabezado\Actores</Filter>
+    </ClInclude>
+    <ClInclude Include="Pad.h">
+      <Filter>Archivos de encabezado</Filter>
+    </ClInclude>
+    <ClInclude Include="SuperEnemySpawner.h">
+      <Filter>Archivos de encabezado\Actores\Enemigos</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

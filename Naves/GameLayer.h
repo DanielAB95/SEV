@@ -108,7 +108,6 @@ public:
 	Pad* pad; // Joystick virtual para movimiento
 	Actor* buttonShoot; // Botón de disparo
 	std::vector<Actor*> weaponSwitchButtons; // Botones para cambiar armas
-	Actor* weaponActiveIndicator; // Indicador visual para el arma activa
 
 	list<Enemy*> enemies;
 	list<Projectile*> projectiles;

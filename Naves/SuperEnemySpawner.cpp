@@ -6,7 +6,7 @@
 using namespace std;
 
 SuperEnemySpawner::SuperEnemySpawner(float x, float y, std::string enemyType, Game* game)
-    : Actor("res/SpawnerBoss.png", x, y, 32, 32, game) {
+    : Actor("res/Spawner.png", x, y, 32, 32, game) {
     
     this->enemyType = enemyType;
     spawnInterval = 150; // 5 segundos aprox (150 frames a 30 FPS)
@@ -18,7 +18,7 @@ SuperEnemySpawner::SuperEnemySpawner(float x, float y, std::string enemyType, Ga
 }
 
 SuperEnemySpawner::SuperEnemySpawner(float x, float y, Game* game)
-    : Actor("res/SpawnerBoss.png", x, y, 32, 32, game) {
+    : Actor("res/Spawner.png", x, y, 32, 32, game) {
     
     this->enemyType = "RANDOM";
     spawnInterval = 150; // 5 segundos aprox

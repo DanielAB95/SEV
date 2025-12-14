@@ -3,7 +3,7 @@
 using namespace std;
 
 CoinPowerUp::CoinPowerUp(float x, float y, Game* game)
-	: PowerUp("res/icono_moneda.png", x, y, 32, 32, game) {
+	: PowerUp("res/moneda.png", x, y, 32, 32, game) {
 	
 	vy = 0; // Sin movimiento vertical en vista top-down
 	vx = 0; // Sin movimiento horizontal
@@ -11,7 +11,7 @@ CoinPowerUp::CoinPowerUp(float x, float y, Game* game)
 }
 
 CoinPowerUp::CoinPowerUp(float x, float y, int value, Game* game)
-	: PowerUp("res/icono_moneda.png", x, y, 32, 32, game) {
+	: PowerUp("res/moneda.png", x, y, 32, 32, game) {
 	
 	vy = 0;
 	vx = 0;

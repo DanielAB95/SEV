@@ -25,8 +25,6 @@ GameLayer::GameLayer(Game* game)
 	savedPlayerMoveSpeed = 0;
 	hasPlayerData = false;
 	
-
-	
 	init();
 }
 
@@ -61,7 +59,7 @@ void GameLayer::init() {
 	
 	// HUD Visual de Armas - Mostrar todas las armas disponibles
 	float weaponHudStartX = WIDTH * 0.05;
-	float weaponHudY = HEIGHT * 0.80;
+	float weaponHudY = HEIGHT * 0.60;
 	float weaponSpacing = 50;
 
 	std::vector<const char*> weaponIconPaths = {
@@ -93,31 +91,25 @@ void GameLayer::init() {
 	levelCompleted = false;
 	shopHintTimer = 5.0f;
 	levelDuration = getLevelDuration(currentLevel);
-	
 
-	
 	// Inicializar hint de tienda
-	shopHint = new Text("Completa el nivel para ir a la tienda", WIDTH * 0.5 - 200, HEIGHT * 0.25, game);
+	shopHint = new Text("Completa el nivel para ir a la tienda", WIDTH * 0.5, HEIGHT * 0.25, game);
 
 	loadMap("res/0.txt"); 
 
 	// Inicializar controles táctiles
 	// Reposicionar pad para no tapar las armas (más a la izquierda y abajo)
-	pad = new Pad(WIDTH * 0.08, HEIGHT * 0.88, 80, 80, game);
-	buttonShoot = new Actor("res/boton_disparo.png", WIDTH * 0.85, HEIGHT * 0.88, 80, 80, game);
+	pad = new Pad(WIDTH * 0.08, HEIGHT * 0.78, 120, 120, game);
+	buttonShoot = new Actor("res/boton_disparo.png", WIDTH * 0.88, HEIGHT * 0.88, 100, 100, game);
 	
 	// Botones de cambio de arma - Posicionar cerca del HUD de armas
 	float weaponButtonStartX = WIDTH * 0.05;
-	float weaponButtonY = HEIGHT * 0.70; // Encima del HUD de armas
 	float weaponButtonSpacing = 50;
 	
 	for (int i = 0; i < 6; i++) {
 		float xPos = weaponButtonStartX + (i * weaponButtonSpacing);
-		weaponSwitchButtons.push_back(new Actor("res/FlechaSeleccion.png", xPos, weaponButtonY, 25, 25, game));
+		weaponSwitchButtons.push_back(new Actor("", xPos, weaponHudY, 64, 49, game));
 	}
-	
-	// Crear indicador para el arma activa
-	weaponActiveIndicator = new Actor("res/boton_disparo.png", weaponButtonStartX, weaponButtonY, 30, 30, game);
 
 	// Actualizar los textos con los valores iniciales del jugador
 	lifePoints->content = to_string(player->lives) + "/" + to_string(player->maxLives);
@@ -130,12 +122,12 @@ void GameLayer::init() {
 }
 
 void GameLayer::processControls() {
-// obtener controles
-SDL_Event event;
-while (SDL_PollEvent(&event)) {
-keysToControls(event);
-mouseToControls(event); // NUEVO: Manejar controles táctiles
-}
+	// obtener controles
+	SDL_Event event;
+	while (SDL_PollEvent(&event)) {
+		keysToControls(event);
+		mouseToControls(event); // NUEVO: Manejar controles táctiles
+	}
 	// procesar controles
 	// Disparar
 	if (controlShoot) {
@@ -371,9 +363,6 @@ void GameLayer::update() {
 		float weaponHudStartX = WIDTH * 0.05;
 		float weaponSpacing = 50;
 		weaponSelector->x = weaponHudStartX + (player->currentWeaponIndex * weaponSpacing);
-		
-		// Actualizar posición del indicador de arma activa táctil
-		weaponActiveIndicator->x = weaponHudStartX + (player->currentWeaponIndex * weaponSpacing);
 	}
 
 	player->update();
@@ -683,12 +672,7 @@ void GameLayer::update() {
 				}
 			}
 		}
-	}
-
-					
-					
-					
-	
+	}	
 
 	// MOVER AQUÍ: Colisiones arma melé con enemigos (ANTES de eliminar)
 	Weapon* specialWeapon = player->getCurrentWeapon();
@@ -975,15 +959,6 @@ void GameLayer::draw() {
 	// Dibujar botones de cambio de arma
 	for (int i = 0; i < weaponSwitchButtons.size(); i++) {
 		weaponSwitchButtons[i]->draw(0, 0);
-		
-		// Resaltar el botón de la arma activa
-		if (i == player->currentWeaponIndex) {
-			// Dibujar un indicador adicional para el arma seleccionada
-			Actor* activeIndicator = new Actor("res/boton_disparo.png", 
-				weaponSwitchButtons[i]->x, weaponSwitchButtons[i]->y, 30, 30, game);
-			activeIndicator->draw(0, 0);
-			delete activeIndicator;
-		}
 	}
 
 	SDL_RenderPresent(game->renderer); // Renderiza
