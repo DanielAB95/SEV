@@ -13,7 +13,7 @@ ShopItem::ShopItem(ItemType type, int baseCost, float x, float y, Game* game) {
 	this->maxLevel = 10; // Máximo 10 niveles por mejora
 	
 	// Crear elementos visuales
-	background = new Actor("res/bloque_metal.png", x, y, 500, 90, game);
+	background = new Actor("res/Banner.png", x, y, 500, 90, game);
 	icon = new Actor(getItemIcon().c_str(), x - 220, y, 50, 50, game);
 	
 	// Crear textos

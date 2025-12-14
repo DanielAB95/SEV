@@ -33,8 +33,8 @@ ShopLayer::~ShopLayer() {
 }
 
 void ShopLayer::init() {
-// Fondo de la tienda - usar fondo existente
-background = new Background("res/fondo_2.png", WIDTH * 0.5, HEIGHT * 0.5, -1, game);
+	// Fondo de la tienda - usar fondo existente
+	background = new Background("res/Tienda.png", WIDTH * 0.5, HEIGHT * 0.5, -1, game);
 	
 	// Título
 	titleText = new Text("=== TIENDA DE MEJORAS ===", WIDTH * 0.5 - 150, HEIGHT * 0.1, game);
@@ -51,7 +51,7 @@ background = new Background("res/fondo_2.png", WIDTH * 0.5, HEIGHT * 0.5, -1, ga
 	                    WIDTH * 0.5 - 220, HEIGHT * 0.95, game);
 	
 	// Crear selector visual
-	selector = new Actor("res/boton_disparo.png", 0, 0, 40, 40, game);
+	selector = new Actor("res/AlienSelector.png", 0, 0, 64, 64, game);
 	
 	// Limpiar items existentes
 	for (auto item : shopItems) {
