@@ -19,6 +19,7 @@
 #include "LifeSpawner.h"
 #include "EnemySpawner.h"
 #include "Tile.h"
+#include "SuperEnemySpawner.h"
 #include <list>
 #include <fstream> // Leer ficheros
 #include <sstream> // Leer líneas / String
@@ -106,6 +107,10 @@ public:
 	list<LifeSpawner*> lifeSpawners; // Lista de spawners de vida
 	list<EnemySpawner*> enemySpawners; // Lista de spawners de enemigos
 	list<EnemyProjectile*> enemyProjectiles; // Lista de proyectiles enemigos
+	
+	// Sistema de super enemigos (reemplaza el sistema de bosses)
+	list<SuperEnemySpawner*> superEnemySpawners; // Lista de spawners de super enemigos  
+	void updateSuperEnemySpawners(); // Método para manejar super enemy spawners
 };
 
 

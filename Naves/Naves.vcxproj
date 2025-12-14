@@ -171,7 +171,6 @@
     <ClCompile Include="GrenadeWeapon.cpp" />
     <ClCompile Include="InicioLayer.cpp" />
     <ClCompile Include="LaserBeamWeapon.cpp" />
-    <ClCompile Include="LaserBeamWeapon_new.cpp" />
     <ClCompile Include="Layer.cpp" />
     <ClCompile Include="LifeSpawner.cpp" />
     <ClCompile Include="LifesPowerUp.cpp" />
@@ -188,6 +187,7 @@
     <ClCompile Include="SimpleShotWeapon.cpp" />
     <ClCompile Include="SMovingEnemy.cpp" />
     <ClCompile Include="Space.cpp" />
+    <ClCompile Include="SuperEnemySpawner.cpp" />
     <ClCompile Include="Text.cpp" />
     <ClCompile Include="Tile.cpp" />
     <ClCompile Include="Weapon.cpp" />
@@ -228,9 +228,15 @@
     <ClInclude Include="SimpleShotWeapon.h" />
     <ClInclude Include="SMovingEnemy.h" />
     <ClInclude Include="Space.h" />
+    <ClInclude Include="SuperEnemySpawner.h" />
     <ClInclude Include="Text.h" />
     <ClInclude Include="Tile.h" />
     <ClInclude Include="Weapon.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="boss_movement_logic.txt" />
+    <Text Include="case_M_to_add.txt" />
+    <Text Include="GameLayerClean.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
