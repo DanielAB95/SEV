@@ -7,7 +7,7 @@ EnemyProjectile::EnemyProjectile(float x, float y, float targetX, float targetY,
 	: Actor("res/disparo_enemigo.png", x, y, 20, 20, game) {
 	
 	speed = 4.0f;
-	maxBounces = 5; // Puede rebotar hasta 5 veces
+	maxBounces = 4; // Puede rebotar hasta 5 veces
 	currentBounces = 0;
 	
 	// Calcular dirección hacia el objetivo
