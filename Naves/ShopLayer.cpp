@@ -64,10 +64,10 @@ void ShopLayer::init() {
 	float itemSpacing = 105;
 	float centerX = WIDTH * 0.5;
 	
-	shopItems.push_back(new ShopItem(ItemType::HEALTH_UPGRADE, 50, 10, centerX, startY, game, true));
-	shopItems.push_back(new ShopItem(ItemType::GUN_SLOT, 200, 4, centerX, startY + itemSpacing, game));
-	shopItems.push_back(new ShopItem(ItemType::SPEED_UPGRADE, 60, 10, centerX, startY + itemSpacing * 2, game, true));
-	shopItems.push_back(new ShopItem(ItemType::RELOAD_UPGRADE, 100, 4, centerX, startY + itemSpacing * 3, game));
+	shopItems.push_back(new ShopItem(ItemType::HEALTH_UPGRADE, 112, 10, centerX, startY, game, true)); // 50 -> 75 -> 112 (+125% total)
+	shopItems.push_back(new ShopItem(ItemType::GUN_SLOT, 450, 4, centerX, startY + itemSpacing, game)); // 200 -> 300 -> 450 (+125% total)
+	shopItems.push_back(new ShopItem(ItemType::SPEED_UPGRADE, 135, 10, centerX, startY + itemSpacing * 2, game, true)); // 60 -> 90 -> 135 (+125% total)
+	shopItems.push_back(new ShopItem(ItemType::RELOAD_UPGRADE, 225, 4, centerX, startY + itemSpacing * 3, game)); // 100 -> 150 -> 225 (+125% total)
 	
 	selectedItemIndex = 0;
 }
