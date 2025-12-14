@@ -54,6 +54,7 @@ public:
 	int savedPlayerDamage;
 	int savedPlayerShoots;
 	float savedPlayerMoveSpeed;
+	std::vector<Weapon*> savedPlayerWeapons;
 	bool hasPlayerData;
 	void loadLevel(int level);
 	void nextLevel();

@@ -153,8 +153,11 @@
     <ClCompile Include="SimpleShotWeapon.cpp">
       <Filter>Archivos de origen\Actores\Armas</Filter>
     </ClCompile>
-    <ClCompile Include="GrenadeWeapon.cpp">
+    <ClCompile Include="LaserBeamWeapon_new.cpp">
       <Filter>Archivos de origen</Filter>
+    </ClCompile>
+    <ClCompile Include="GrenadeWeapon.cpp">
+      <Filter>Archivos de origen\Actores\Armas</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -8,12 +8,12 @@
 FlamethrowerWeapon::FlamethrowerWeapon(Game* game) : Weapon(WeaponType::FLAMETHROWER, game) {
 	cooldown = 0;
 	currentCooldown = 0;
-	ammo = 200;
-	maxAmmo = 999;
+	ammo = 300;
+	maxAmmo = 300;
 	damage = 1;
-	unlocked = true; // Desbloqueado para testing
+	unlocked = false; // Desbloqueado para testing
 	
-	flameActor = new Actor("res/flame.png", 0, 0, 100, 60, game);
+	flameActor = new Actor("res/Flames.png", 0, 0, 100, 60, game);
 	isFiring = false;
 	fuelConsumption = 1;
 	coneLength = 150.0f;

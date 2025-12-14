@@ -47,6 +47,9 @@ public:
 	Audio* audioFire;
 	int audioFireCooldown;
 
+	void reload();
+	void unlock();
+
 protected:
 	// Referencias compartidas para crear y gestionar proyectiles
 	std::list<Projectile*>* projectileList;

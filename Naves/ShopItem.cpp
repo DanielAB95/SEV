@@ -2,7 +2,7 @@
 #include <iostream>
 using namespace std;
 
-ShopItem::ShopItem(ItemType type, int baseCost, float x, float y, Game* game) {
+ShopItem::ShopItem(ItemType type, int baseCost, int max, float x, float y, Game* game, bool repeatable) {
 	this->type = type;
 	this->baseCost = baseCost;
 	this->cost = baseCost;
@@ -10,7 +10,8 @@ ShopItem::ShopItem(ItemType type, int baseCost, float x, float y, Game* game) {
 	this->y = y;
 	this->game = game;
 	this->level = 0;
-	this->maxLevel = 10; // Máximo 10 niveles por mejora
+	this->maxLevel = max;
+	this->repeat = repeatable;
 	
 	// Crear elementos visuales
 	background = new Actor("res/Banner.png", x, y, 500, 90, game);
@@ -41,12 +42,12 @@ std::string ShopItem::getItemName() {
 	switch (type) {
 		case ItemType::HEALTH_UPGRADE:
 			return "Mejora de Vida";
-		case ItemType::DAMAGE_UPGRADE:
-			return "Mejora de Daño";
+		case ItemType::GUN_SLOT:
+			return "Nueva Arma";
 		case ItemType::SPEED_UPGRADE:
 			return "Mejora de Velocidad";
-		case ItemType::MAX_AMMO_UPGRADE:
-			return "Municion Maxima";
+		case ItemType::RELOAD_UPGRADE:
+			return "Recargar Municion";
 		default:
 			return "Item Desconocido";
 	}
@@ -56,12 +57,12 @@ std::string ShopItem::getItemDescription() {
 	switch (type) {
 		case ItemType::HEALTH_UPGRADE:
 			return "+10 Vida Maxima";
-		case ItemType::DAMAGE_UPGRADE:
-			return "+5 Daño";
+		case ItemType::GUN_SLOT:
+			return " ";
 		case ItemType::SPEED_UPGRADE:
 			return "+0.5 Velocidad";
-		case ItemType::MAX_AMMO_UPGRADE:
-			return "+10 Disparos Iniciales";
+		case ItemType::RELOAD_UPGRADE:
+			return "Full munición en armas";
 		default:
 			return "";
 	}
@@ -71,11 +72,11 @@ std::string ShopItem::getItemIcon() {
 	switch (type) {
 		case ItemType::HEALTH_UPGRADE:
 			return "res/corazon.png";
-		case ItemType::DAMAGE_UPGRADE:
+		case ItemType::GUN_SLOT:
 			return "res/disparo_jugador.png";
 		case ItemType::SPEED_UPGRADE:
 			return "res/Astronauta.png"; // Usar astronauta como icono de velocidad
-		case ItemType::MAX_AMMO_UPGRADE:
+		case ItemType::RELOAD_UPGRADE:
 			return "res/recolectable.png"; // Usar recolectable como munición
 		default:
 			return "res/moneda.png";
@@ -98,7 +99,15 @@ void ShopItem::updateTexts() {
 }
 
 bool ShopItem::canAfford(Player* player) {
-	return player->money >= cost && level < maxLevel;
+	bool affordable = player->money >= cost && level < maxLevel;
+	bool available;
+	if (repeat) {
+		available = repeat;
+	}
+	else {
+		available = !bought;
+	}
+	return affordable && available;
 }
 
 bool ShopItem::purchase(Player* player) {
@@ -110,6 +119,9 @@ bool ShopItem::purchase(Player* player) {
 	// Restar dinero
 	player->money -= cost;
 	level++;
+	if (!repeat) {
+		bought = true;
+	}
 	
 	// Aplicar mejora según el tipo
 	switch (type) {
@@ -117,17 +129,17 @@ bool ShopItem::purchase(Player* player) {
 			player->upgradeHealth();
 			cout << "¡Vida mejorada! Nueva vida maxima: " << player->maxLives << endl;
 			break;
-		case ItemType::DAMAGE_UPGRADE:
-			player->upgradeDamage();
-			cout << "¡Dano mejorado! Nuevo dano: " << player->damage << endl;
+		case ItemType::GUN_SLOT:
+			player->unlockNextWeapon();
+			cout << "Nueva arma " << player->damage << endl;
 			break;
 		case ItemType::SPEED_UPGRADE:
 			player->upgradeSpeed();
 			cout << "¡Velocidad mejorada! Nueva velocidad: " << player->moveSpeed << endl;
 			break;
-		case ItemType::MAX_AMMO_UPGRADE:
-			player->numberOfShoots += 10;
-			cout << "¡Municion recargada! +10 disparos disponibles. Total: " << player->numberOfShoots << endl;
+		case ItemType::RELOAD_UPGRADE:
+			player->reload();
+			cout << "¡Municion recargada! Total: " << player->numberOfShoots << endl;
 			break;
 	}
 	

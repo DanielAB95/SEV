@@ -14,7 +14,7 @@ public:
 	void update() override;
 	bool canFire() override;
 	std::string getName() override;
-	std::string getIconPath() override { return "res/laser_icon.png"; }
+	std::string getIconPath() override { return "res/LaserShot.png"; }
 	
 	Actor* beamActor;
 	bool isActive;

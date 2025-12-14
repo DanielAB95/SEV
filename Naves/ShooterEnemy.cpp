@@ -6,10 +6,6 @@ using namespace std;
 ShooterEnemy::ShooterEnemy(float x, float y, Game* game)
 	: Enemy(x, y, game) {
 	
-	
-	
-	
-	
 	maxLives = 20; // Menos vida, más frágil
 	lives = 20;
 	damage = 6; // Daño bajo en contacto (no es su fuerte)
@@ -103,6 +99,7 @@ void ShooterEnemy::maintainDistance(Player* player, float scrollX, float scrollY
 	// Verificar si está visible en pantalla
 	bool visible = isVisibleOnScreen(scrollX, scrollY);
 	
+	/*
 	// DEBUG: Mostrar información
 	static int debugCounter = 0;
 	debugCounter++;
@@ -113,13 +110,11 @@ void ShooterEnemy::maintainDistance(Player* player, float scrollX, float scrollY
 		cout << "Player: (" << player->x << ", " << player->y << ")" << endl;
 		cout << "Scroll: (" << scrollX << ", " << scrollY << ")" << endl;
 	}
+	*/
 	
 	// PRIORIDAD 1: Si NO está visible en pantalla O está muy lejos del jugador
 	// Perseguir activamente hasta estar visible Y cerca
 	if (!visible || distance > maxDistance * 1.5f) {
-		if (!visible) {
-			cout << ">>> ShooterEnemy FUERA DE PANTALLA - Persiguiendo" << endl;
-		}
 		// Normalizar y multiplicar por velocidad alta
 		float normalizedDx = dx / distance;
 		float normalizedDy = dy / distance;
@@ -136,7 +131,6 @@ void ShooterEnemy::maintainDistance(Player* player, float scrollX, float scrollY
 		float normalizedDy = dy / distance;
 		vx = -normalizedDx * moveSpeed;
 		vy = -normalizedDy * moveSpeed;
-		cout << ">>> ShooterEnemy MUY CERCA - Alejándose" << endl;
 	}
 	// Si está lejos pero en rango de disparo, acercarse lentamente
 	else if (distance > maxDistance) {
@@ -145,7 +139,6 @@ void ShooterEnemy::maintainDistance(Player* player, float scrollX, float scrollY
 		float normalizedDy = dy / distance;
 		vx = normalizedDx * moveSpeed;
 		vy = normalizedDy * moveSpeed;
-		cout << ">>> ShooterEnemy en rango - Acercándose lentamente" << endl;
 	}
 	// Si está en la distancia óptima, moverse lateralmente
 	else {
@@ -171,7 +164,6 @@ EnemyProjectile* ShooterEnemy::shoot(Player* player) {
 	// Solo disparar si está dentro del rango
 	if (distance <= maxDistance * 1.2f) {
 		shootTimer = shootCadence;
-		cout << "¡ShooterEnemy dispara!" << endl;
 		return new EnemyProjectile(x, y, player->x, player->y, game);
 	}
 	

@@ -29,7 +29,7 @@ Player(float x, float y, Game* game);
 	Audio* audioShoot;
 	int shootCadence = 22;
 	int shootTime = 0;
-	int numberOfShoots = 20;
+	int numberOfShoots;
 	int lives;
 	int money; // Dinero recolectado
 	
@@ -43,12 +43,14 @@ Player(float x, float y, Game* game);
 	int currentWeaponIndex; // Índice del arma actual (público para HUD)
 	Weapon* getCurrentWeapon();
 	void switchWeapon(int index);
-	void unlockWeapon(WeaponType type);
 	void initWeapons();
 	
 	// Métodos para mejorar stats
 	void upgradeHealth();
 	void upgradeDamage();
 	void upgradeSpeed();
+
+	void unlockNextWeapon();
+	void reload();
 };
 

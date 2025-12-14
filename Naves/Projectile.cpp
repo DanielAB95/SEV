@@ -1,7 +1,7 @@
 #include "Projectile.h"
 
 Projectile::Projectile(float xTarget, float yTarget, float x, float y, Game* game) :
-    Actor("res/disparo_jugador.png", x, y, 18, 6, game)
+    Actor("res/NormalShot.png", x, y, 18, 6, game)
 {
     this->xTarget = xTarget;
     this->yTarget = yTarget;

@@ -19,6 +19,7 @@ public:
 	
 	void setPlayer(Player* player);
 	void setNextLevel(int level); // Nuevo: establecer el siguiente nivel a cargar
+	void resetBoughts();
 	
 	
 private:
@@ -41,7 +42,6 @@ private:
 	// Variables para manejar transición entre niveles
 	int nextLevelToLoad;
 	bool shouldLoadNextLevel;
-	
 	
 	void updateMoneyDisplay();
 	void selectNextItem();

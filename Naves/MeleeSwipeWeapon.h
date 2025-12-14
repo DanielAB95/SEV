@@ -14,7 +14,7 @@ public:
 	void update() override;
 	bool canFire() override;
 	std::string getName() override { return "Barrido Melee"; }
-	std::string getIconPath() override { return "res/melee_icon.png"; }
+	std::string getIconPath() override { return "res/Sword.png"; }
 	
 	// Método para dibujar el arma cuando está activa
 	void draw(float scrollX = 0, float scrollY = 0);

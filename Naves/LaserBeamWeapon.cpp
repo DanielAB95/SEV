@@ -7,13 +7,13 @@
 LaserBeamWeapon::LaserBeamWeapon(Game* game) : Weapon(WeaponType::LASER_BEAM, game) {
 	cooldown = 90;
 	currentCooldown = 0;
-	ammo = 5;
-	maxAmmo = 999;
+	ammo = 10;
+	maxAmmo = 10;
 	damage = 15;
-	unlocked = true; // Desbloqueado para testing
+	unlocked = false; // Desbloqueado para testing
 	beamWidth = 20.0f; // Ancho del rayo para detección de colisiones
 	
-	beamActor = new Actor("res/laser_beam.png", 0, 0, 800, 8, game);
+	beamActor = new Actor("res/LaserShot.png", 0, 0, 800, 8, game);
 	isActive = false;
 	activeTime = 0;
 	maxActiveTime = 20;
@@ -105,7 +105,7 @@ void LaserBeamWeapon::draw(float scrollX, float scrollY) {
 				float y = startY + (stepY * i);
 				
 				// Crear un pequeño actor temporal para cada segmento
-				Actor segmentActor("res/laser_beam.png", x, y, 12, 4, game);
+				Actor segmentActor("res/LaserShot.png", x, y, 36, 12, game);
 				segmentActor.draw(scrollX, scrollY);
 			}
 		}

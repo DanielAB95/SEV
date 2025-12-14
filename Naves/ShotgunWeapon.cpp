@@ -8,7 +8,7 @@ ShotgunWeapon::ShotgunWeapon(Game* game) : Weapon(WeaponType::SHOTGUN, game) {
 	cooldown = 40;
 	currentCooldown = 0;
 	ammo = 50;
-	maxAmmo = 999;
+	maxAmmo = 50;
 	damage = 8;
 	unlocked = false;
 	pelletsPerShot = 3;
@@ -74,5 +74,5 @@ std::string ShotgunWeapon::getName() {
 }
 
 std::string ShotgunWeapon::getIconPath() {
-	return "res/disparo_jugador.png"; // Usar icono temporal
+	return "res/ShotGunShot.png"; // Usar icono temporal
 }

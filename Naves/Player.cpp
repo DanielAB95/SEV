@@ -29,6 +29,7 @@ Player::Player(float x, float y, Game* game)
 	// Inicializar sistema de armas
 	initWeapons();
 	currentWeaponIndex = 0;
+	numberOfShoots = getCurrentWeapon()->ammo;
 }
 
 void Player::update() {
@@ -54,6 +55,7 @@ void Player::shoot(Enemy* target) {
 	
 	// El arma maneja el disparo internamente (incluyendo el audio)
 	currentWeapon->fire(this, target->x, target->y);
+	numberOfShoots = getCurrentWeapon()->ammo;
 	// ¡Ya no reproducir audio aquí!
 }
 
@@ -106,14 +108,25 @@ void Player::initWeapons() {
 	weapons.push_back(new GrenadeWeapon(game));
 	weapons.push_back(new LaserBeamWeapon(game));
 	
-	// TEMPORAL: Desbloquear algunas armas para testing
-	weapons[1]->unlocked = true; // MeleeSwipeWeapon
-	weapons[3]->unlocked = true; // FlamethrowerWeapon
-	weapons[4]->unlocked = true; // GrenadeWeapon
-	weapons[5]->unlocked = true; // LaserBeamWeapon
-	
 	cout << "Sistema de armas inicializado: " << weapons.size() << " armas creadas" << endl;
 	cout << "Armas desbloqueadas: SimpleShotWeapon, MeleeSwipeWeapon, ShotgunWeapon, FlamethrowerWeapon, GrenadeWeapon, LaserBeamWeapon" << endl;
+}
+
+void Player::unlockNextWeapon() {
+	for (auto const& weapon : weapons) {
+		if (!weapon->unlocked) {
+			weapon->unlock();
+			cout << "Unlocked " + weapon->getName() + to_string(weapon->unlocked) << endl;
+			break;
+		}
+	}
+}
+
+void Player::reload() {
+	for (auto const& weapon : weapons) {
+		weapon->reload();
+	}
+	numberOfShoots = getCurrentWeapon()->ammo;
 }
 
 Weapon* Player::getCurrentWeapon() {
@@ -126,22 +139,14 @@ Weapon* Player::getCurrentWeapon() {
 void Player::switchWeapon(int index) {
 	if (index >= 0 && static_cast<size_t>(index) < weapons.size()) {
 		currentWeaponIndex = index;
+		numberOfShoots = getCurrentWeapon()->ammo;
 		if (weapons[index]->unlocked) {
 			cout << "Arma cambiada a: " << weapons[index]->getName() << " (DESBLOQUEADA)" << endl;
 		} else {
 			cout << "Arma seleccionada: " << weapons[index]->getName() << " (BLOQUEADA - Visible pero no usable)" << endl;
 		}
 	}
-}
 
-void Player::unlockWeapon(WeaponType type) {
-	for (auto weapon : weapons) {
-		if (weapon->type == type) {
-			weapon->unlocked = true;
-			cout << "Arma desbloqueada: " << weapon->getName() << endl;
-			break;
-		}
-	}
 }
 
 

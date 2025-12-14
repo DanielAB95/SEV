@@ -6,8 +6,8 @@
 SimpleShotWeapon::SimpleShotWeapon(Game* game) : Weapon(WeaponType::SIMPLE_SHOT, game) {
 	cooldown = 22;
 	currentCooldown = 0;
-	ammo = 999; // Munición infinita para arma básica
-	maxAmmo = 999;
+	ammo = 100;
+	maxAmmo = 100;
 	damage = 10;
 	unlocked = true;
 	
@@ -38,6 +38,7 @@ void SimpleShotWeapon::fire(Player* player, float targetX, float targetY) {
 	}
 	
 	currentCooldown = cooldown;
+	ammo--;
 	
 	// Crear proyectil	
 	Projectile* projectile = new Projectile(targetX, targetY, player->x, player->y, game);

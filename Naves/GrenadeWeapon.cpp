@@ -5,7 +5,7 @@
 #include <iostream>
 
 GrenadeProjectile::GrenadeProjectile(float targetX, float targetY, float startX, float startY, Game* game)
-	: Actor("res/grenade.png", startX, startY, 20, 20, game) {
+	: Actor("res/GrenadeBlast.png", startX, startY, 32, 12, game) {
 	
 	// Guardar posición objetivo y inicial para verificar llegada
 	this->targetX = targetX;
@@ -95,10 +95,10 @@ bool GrenadeProjectile::hasExploded() {
 GrenadeWeapon::GrenadeWeapon(Game* game) : Weapon(WeaponType::GRENADE, game) {
 	cooldown = 60;
 	currentCooldown = 0;
-	ammo = 10;
-	maxAmmo = 999;
+	ammo = 20;
+	maxAmmo = 20;
 	damage = 30;
-	unlocked = true; // Desbloqueado para testing
+	unlocked = false; // Desbloqueado para testing
 	explosionRadius = 80;
 	
 	std::cout << "GrenadeWeapon creada y desbloqueada" << std::endl;

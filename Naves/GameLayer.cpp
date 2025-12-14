@@ -57,27 +57,23 @@ void GameLayer::init() {
 	// HUD inferior derecha - DISPAROS - Ajustado para no salirse
 	textShoots = new Text("Disparos: 0", WIDTH * 0.78, HEIGHT * 0.93, game);
 	
-	// HUD Sistema de Armas
-	textWeapon = new Text("Arma: Disparo Simple", WIDTH * 0.5 - 100, HEIGHT * 0.85, game);
-	weaponIcon = new Actor("res/disparo_jugador.png", WIDTH * 0.42, HEIGHT * 0.85, 32, 32, game);
-	
 	// HUD Visual de Armas - Mostrar todas las armas disponibles
 	float weaponHudStartX = WIDTH * 0.05;
 	float weaponHudY = HEIGHT * 0.80;
 	float weaponSpacing = 50;
 
 	std::vector<const char*> weaponIconPaths = {
-		"res/disparo_jugador.png", "res/melee_swipe.png", "res/disparo_jugador.png",
-		"res/flame.png", "res/recolectable.png", "res/laser_beam.png"
+		"res/Pistol.png", "res/Sword.png", "res/ShotGun.png",
+		"res/Flamethrower.png", "res/Grenade.png", "res/Laser.png"
 	};
 
 	for (int i = 0; i < 6; i++) {
 		float xPos = weaponHudStartX + (i * weaponSpacing);
-		weaponIcons.push_back(new Actor(weaponIconPaths[i], xPos, weaponHudY, 32, 32, game));
+		weaponIcons.push_back(new Actor(weaponIconPaths[i], xPos, weaponHudY, 64, 49, game));
 		weaponNumbers.push_back(new Text(std::to_string(i + 1), xPos, weaponHudY + 25, game));
 	}
 
-	weaponSelector = new Actor("res/boton_disparo.png", weaponHudStartX, weaponHudY, 40, 40, game);
+	weaponSelector = new Actor("res/Selector.png", weaponHudStartX, weaponHudY, 64, 49, game);
 
 	background = new Background("res/fondo.png", WIDTH * 0.5, HEIGHT * 0.5, -1, game);
 	
@@ -269,7 +265,6 @@ void GameLayer::update() {
 	// Actualizar HUD de arma
 	Weapon* currentWeapon = player->getCurrentWeapon();
 	if (currentWeapon != nullptr) {
-		textWeapon->content = "Arma: " + currentWeapon->getName();
 		
 		// Actualizar posición del selector visual
 		float weaponHudStartX = WIDTH * 0.05;
@@ -570,7 +565,7 @@ void GameLayer::update() {
 
 	// MOVER AQUÍ: Colisiones arma melé con enemigos (ANTES de eliminar)
 	Weapon* specialWeapon = player->getCurrentWeapon();
-	std::cout << "Weapon check - Current weapon type: " << (int)specialWeapon->type << std::endl;
+	//std::cout << "Weapon check - Current weapon type: " << (int)specialWeapon->type << std::endl;
 	if (specialWeapon != nullptr && specialWeapon->type == WeaponType::MELEE_SWIPE) {
 		MeleeSwipeWeapon* meleeWeapon = dynamic_cast<MeleeSwipeWeapon*>(specialWeapon);
 		if (meleeWeapon != nullptr && meleeWeapon->isActive) {
@@ -729,7 +724,7 @@ void GameLayer::update() {
 
 	// NUEVO: Colisiones arma melé con enemigos
 	Weapon* meleeWeaponCheck = player->getCurrentWeapon();
-	std::cout << "Weapon check - Current weapon type: " << (int)meleeWeaponCheck->type << std::endl;
+	//std::cout << "Weapon check - Current weapon type: " << (int)meleeWeaponCheck->type << std::endl;
 	if (meleeWeaponCheck != nullptr && meleeWeaponCheck->type == WeaponType::MELEE_SWIPE) {
 		MeleeSwipeWeapon* meleeWeapon = dynamic_cast<MeleeSwipeWeapon*>(meleeWeaponCheck);
 		if (meleeWeapon != nullptr && meleeWeapon->isActive) {
@@ -807,7 +802,7 @@ void GameLayer::update() {
 		if (enemy->y > MAP_MAX_Y) enemy->y = MAP_MAX_Y;
 	}
 
-	std::cout << "update GameLayer" << endl;
+	//std::cout << "update GameLayer" << endl;
 }
 
 void GameLayer::draw() {
@@ -897,10 +892,6 @@ void GameLayer::draw() {
 	if (shopHintTimer > 0) {
 		shopHint->draw(0, 0);
 	}
-	
-	// HUD Sistema de Armas
-	weaponIcon->draw(0, 0);
-	textWeapon->draw(0, 0);
 	
 	// HUD Visual de Armas - Dibujar todos los iconos y números
 	for (int i = 0; i < weaponIcons.size(); i++) {
@@ -1171,7 +1162,7 @@ void GameLayer::calculateScroll() {
 
 float GameLayer::getLevelDuration(int level) {
 	switch(level) {
-		case 1: return 1.0f;  // 30 segundos
+		case 1: return 30.0f;  // 30 segundos
 		case 2: return 45.0f;  // 45 segundos
 		case 3: return 60.0f;  // 60 segundos
 		case 4: return 75.0f;  // 75 segundos
@@ -1202,6 +1193,7 @@ void GameLayer::loadLevel(int level) {
 		player->damage = savedPlayerDamage;
 		player->numberOfShoots = savedPlayerShoots;
 		player->moveSpeed = savedPlayerMoveSpeed;
+		player->weapons = savedPlayerWeapons;
 		cout << "Estado del jugador restaurado - Dinero: " << player->money << ", Vidas: " << player->lives << ", DISPAROS: " << player->numberOfShoots << endl;
 		cout << "Mejoras restauradas - Vida máxima: " << player->maxLives << ", Daño: " << player->damage << ", Velocidad: " << player->moveSpeed << endl;
 		
@@ -1287,6 +1279,7 @@ void GameLayer::nextLevel() {
 		savedPlayerDamage = player->damage;
 		savedPlayerShoots = player->numberOfShoots;
 		savedPlayerMoveSpeed = player->moveSpeed;
+		savedPlayerWeapons = player->weapons;
 		hasPlayerData = true;
 		cout << "Estado del jugador guardado - Dinero: " << savedPlayerMoney << ", Vidas: " << savedPlayerLives << ", DISPAROS: " << savedPlayerShoots << endl;
 		cout << "Mejoras - Vida máxima: " << savedPlayerMaxLives << ", Daño: " << savedPlayerDamage << ", Velocidad: " << savedPlayerMoveSpeed << endl;
@@ -1303,6 +1296,7 @@ void GameLayer::nextLevel() {
 			ShopLayer* shop = dynamic_cast<ShopLayer*>(game->shopLayer);
 			if (shop != nullptr) {
 				shop->setPlayer(player);
+				shop->resetBoughts();
 				// Indicar a la tienda que debe cargar el siguiente nivel al salir
 				shop->setNextLevel(currentLevel);
 			}

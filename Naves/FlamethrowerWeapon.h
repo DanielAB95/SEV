@@ -14,7 +14,7 @@ public:
 	void update() override;
 	bool canFire() override;
 	std::string getName() override;
-	std::string getIconPath() override { return "res/flame.png"; }
+	std::string getIconPath() override { return "res/Flames.png"; }
 	
 	// Método para dibujar el arma cuando está activa
 	void draw(float scrollX = 0, float scrollY = 0);

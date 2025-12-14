@@ -12,7 +12,7 @@ MeleeSwipeWeapon::MeleeSwipeWeapon(Game* game) : Weapon(WeaponType::MELEE_SWIPE,
 	damage = 15;
 	unlocked = true; // Ya está desbloqueada para testing
 	
-	swipeActor = new Actor("res/melee_swipe.png", 0, 0, 80, 80, game);
+	swipeActor = new Actor("res/Sword.png", 0, 0, 80, 80, game);
 	isActive = false;
 	activeTime = 0;
 	maxActiveTime = 15;

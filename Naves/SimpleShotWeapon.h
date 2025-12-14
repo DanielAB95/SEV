@@ -11,6 +11,6 @@ public:
 	void update() override;
 	bool canFire() override;
 	std::string getName() override { return "Disparo Simple"; }
-	std::string getIconPath() override { return "res/disparo_jugador.png"; }
+	std::string getIconPath() override { return "res/NormalShot.png"; }
 
 };

@@ -64,10 +64,10 @@ void ShopLayer::init() {
 	float itemSpacing = 105;
 	float centerX = WIDTH * 0.5;
 	
-	shopItems.push_back(new ShopItem(ItemType::HEALTH_UPGRADE, 50, centerX, startY, game));
-	shopItems.push_back(new ShopItem(ItemType::DAMAGE_UPGRADE, 75, centerX, startY + itemSpacing, game));
-	shopItems.push_back(new ShopItem(ItemType::SPEED_UPGRADE, 60, centerX, startY + itemSpacing * 2, game));
-	shopItems.push_back(new ShopItem(ItemType::MAX_AMMO_UPGRADE, 40, centerX, startY + itemSpacing * 3, game));
+	shopItems.push_back(new ShopItem(ItemType::HEALTH_UPGRADE, 50, 10, centerX, startY, game, true));
+	shopItems.push_back(new ShopItem(ItemType::GUN_SLOT, 200, 4, centerX, startY + itemSpacing, game));
+	shopItems.push_back(new ShopItem(ItemType::SPEED_UPGRADE, 60, 10, centerX, startY + itemSpacing * 2, game, true));
+	shopItems.push_back(new ShopItem(ItemType::RELOAD_UPGRADE, 100, 4, centerX, startY + itemSpacing * 3, game));
 	
 	selectedItemIndex = 0;
 }
@@ -164,6 +164,7 @@ void ShopLayer::processControls() {
 				gameLayer->savedPlayerDamage = player->damage;
 				gameLayer->savedPlayerShoots = player->numberOfShoots;
 				gameLayer->savedPlayerMoveSpeed = player->moveSpeed;
+				gameLayer->savedPlayerWeapons = player->weapons;
 				gameLayer->hasPlayerData = true;
 				cout << "Estado post-tienda guardado - Dinero: " << player->money << ", Vidas: " << player->lives << ", DISPAROS: " << player->numberOfShoots << endl;
 				
@@ -261,5 +262,11 @@ void ShopLayer::draw() {
 	
 	// Renderizar todo
 	SDL_RenderPresent(game->renderer);
+}
+
+void ShopLayer::resetBoughts() {
+	for (auto const& shopItem : shopItems) {
+		shopItem->bought = false;
+	}
 }
 

@@ -6,8 +6,6 @@ using namespace std;
 ChargeEnemy::ChargeEnemy(float x, float y, Game* game)
 	: Enemy(x, y, game) {
 	
-	
-	
 	maxLives = 25; // Menos vida pero más peligroso
 	lives = 25;
 	damage = 15; // Daño alto por embestida

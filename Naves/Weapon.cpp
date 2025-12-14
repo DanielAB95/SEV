@@ -21,3 +21,11 @@ void Weapon::setProjectileReferences(std::list<Projectile*>* projectileList, Spa
 	this->projectileList = projectileList;
 	this->space = space;
 }
+
+void Weapon::reload() {
+	ammo = maxAmmo;
+}
+
+void Weapon::unlock() {
+	unlocked = true;
+}

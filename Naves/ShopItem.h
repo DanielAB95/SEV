@@ -6,14 +6,14 @@
 
 enum class ItemType {
 	HEALTH_UPGRADE,
-	DAMAGE_UPGRADE,
+	GUN_SLOT,
 	SPEED_UPGRADE,
-	MAX_AMMO_UPGRADE
+	RELOAD_UPGRADE
 };
 
 class ShopItem {
 public:
-	ShopItem(ItemType type, int baseCost, float x, float y, Game* game);
+	ShopItem(ItemType type, int baseCost, int max, float x, float y, Game* game, bool repeatable = false);
 	~ShopItem();
 	
 	bool canAfford(Player* player);
@@ -39,6 +39,8 @@ public:
 	
 	float x, y;
 	Game* game;
+	bool repeat;
+	bool bought = false;
 	
 private:
 	void updateCost();
