@@ -73,6 +73,12 @@ public:
 	Text* textPoints;
 	Text* lifePoints;
 	Text* textShoots;
+	Text* textWeapon;
+	Actor* weaponIcon;
+	// Sistema de armas visual - HUD
+	std::vector<Actor*> weaponIcons; // Iconos de todas las armas
+	std::vector<Text*> weaponNumbers; // Números de las armas (1-6)
+	Actor* weaponSelector; // Indicador visual del arma seleccionada
 	// Textos para el sistema de niveles
 	Text* textLevel;
 	Text* textTime;

@@ -25,6 +25,18 @@
     <Filter Include="Archivos de origen\Actores">
       <UniqueIdentifier>{528f1dfc-2b51-4d97-b5ac-7177146d7c58}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Archivos de origen\Actores\Armas">
+      <UniqueIdentifier>{52ccd794-6f50-4847-9787-1acbcc843c30}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Archivos de encabezado\Actores\Armas">
+      <UniqueIdentifier>{0005fda8-6f64-477c-8a4f-f476a1d0bf8d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Archivos de encabezado\Actores\Enemigos">
+      <UniqueIdentifier>{186eba05-06d7-4d54-9df3-2d48f889bbf1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Archivos de origen\Actores\Enemigos">
+      <UniqueIdentifier>{c6af0772-a1ef-4298-b132-2fab1d55752c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
@@ -48,9 +60,6 @@
     <ClCompile Include="Background.cpp">
       <Filter>Archivos de origen\Actores</Filter>
     </ClCompile>
-    <ClCompile Include="Enemy.cpp">
-      <Filter>Archivos de origen\Actores</Filter>
-    </ClCompile>
     <ClCompile Include="Projectile.cpp">
       <Filter>Archivos de origen\Actores</Filter>
     </ClCompile>
@@ -62,12 +71,6 @@
     </ClCompile>
     <ClCompile Include="Audio.cpp">
       <Filter>Archivos de origen</Filter>
-    </ClCompile>
-    <ClCompile Include="BasicEnemy.cpp">
-      <Filter>Archivos de origen\Actores</Filter>
-    </ClCompile>
-    <ClCompile Include="SMovingEnemy.cpp">
-      <Filter>Archivos de origen\Actores</Filter>
     </ClCompile>
     <ClCompile Include="PowerUp.cpp">
       <Filter>Archivos de origen\Actores</Filter>
@@ -93,16 +96,7 @@
     <ClCompile Include="CollectibleItem.cpp">
       <Filter>Archivos de origen\Actores</Filter>
     </ClCompile>
-    <ClCompile Include="ChargeEnemy.cpp">
-      <Filter>Archivos de origen\Actores</Filter>
-    </ClCompile>
-    <ClCompile Include="EnemyProjectile.cpp">
-      <Filter>Archivos de origen\Actores</Filter>
-    </ClCompile>
     <ClCompile Include="LifeSpawner.cpp">
-      <Filter>Archivos de origen\Actores</Filter>
-    </ClCompile>
-    <ClCompile Include="ShooterEnemy.cpp">
       <Filter>Archivos de origen\Actores</Filter>
     </ClCompile>
     <ClCompile Include="InicioLayer.cpp">
@@ -114,13 +108,52 @@
     <ClCompile Include="Checkpoint.cpp">
       <Filter>Archivos de origen\Actores</Filter>
     </ClCompile>
-    <ClCompile Include="EnemySpawner.cpp">
-      <Filter>Archivos de origen\Actores</Filter>
+    <ClCompile Include="FlamethrowerWeapon.cpp">
+      <Filter>Archivos de origen\Actores\Armas</Filter>
     </ClCompile>
-    <ClCompile Include="ShopItem.cpp">
-      <Filter>Archivos de origen</Filter>
+    <ClCompile Include="GrenadeWeapon.cpp">
+      <Filter>Archivos de origen\Actores\Armas</Filter>
+    </ClCompile>
+    <ClCompile Include="LaserBeamWeapon.cpp">
+      <Filter>Archivos de origen\Actores\Armas</Filter>
+    </ClCompile>
+    <ClCompile Include="MeleeSwipeWeapon.cpp">
+      <Filter>Archivos de origen\Actores\Armas</Filter>
+    </ClCompile>
+    <ClCompile Include="ShotgunWeapon.cpp">
+      <Filter>Archivos de origen\Actores\Armas</Filter>
+    </ClCompile>
+    <ClCompile Include="Weapon.cpp">
+      <Filter>Archivos de origen\Actores\Armas</Filter>
+    </ClCompile>
+    <ClCompile Include="BasicEnemy.cpp">
+      <Filter>Archivos de origen\Actores\Enemigos</Filter>
+    </ClCompile>
+    <ClCompile Include="ChargeEnemy.cpp">
+      <Filter>Archivos de origen\Actores\Enemigos</Filter>
+    </ClCompile>
+    <ClCompile Include="Enemy.cpp">
+      <Filter>Archivos de origen\Actores\Enemigos</Filter>
+    </ClCompile>
+    <ClCompile Include="EnemyProjectile.cpp">
+      <Filter>Archivos de origen\Actores\Enemigos</Filter>
+    </ClCompile>
+    <ClCompile Include="EnemySpawner.cpp">
+      <Filter>Archivos de origen\Actores\Enemigos</Filter>
+    </ClCompile>
+    <ClCompile Include="ShooterEnemy.cpp">
+      <Filter>Archivos de origen\Actores\Enemigos</Filter>
+    </ClCompile>
+    <ClCompile Include="SMovingEnemy.cpp">
+      <Filter>Archivos de origen\Actores\Enemigos</Filter>
     </ClCompile>
     <ClCompile Include="ShopLayer.cpp">
+      <Filter>Archivos de origen\Layer</Filter>
+    </ClCompile>
+    <ClCompile Include="ShopItem.cpp">
+      <Filter>Archivos de origen\Actores</Filter>
+    </ClCompile>
+    <ClCompile Include="SimpleShotWeapon.cpp">
       <Filter>Archivos de origen</Filter>
     </ClCompile>
   </ItemGroup>
@@ -143,9 +176,6 @@
     <ClInclude Include="Background.h">
       <Filter>Archivos de encabezado\Actores</Filter>
     </ClInclude>
-    <ClInclude Include="Enemy.h">
-      <Filter>Archivos de encabezado\Actores</Filter>
-    </ClInclude>
     <ClInclude Include="Projectile.h">
       <Filter>Archivos de encabezado\Actores</Filter>
     </ClInclude>
@@ -157,12 +187,6 @@
     </ClInclude>
     <ClInclude Include="Audio.h">
       <Filter>Archivos de encabezado</Filter>
-    </ClInclude>
-    <ClInclude Include="BasicEnemy.h">
-      <Filter>Archivos de encabezado\Actores</Filter>
-    </ClInclude>
-    <ClInclude Include="SMovingEnemy.h">
-      <Filter>Archivos de encabezado\Actores</Filter>
     </ClInclude>
     <ClInclude Include="PowerUp.h">
       <Filter>Archivos de encabezado\Actores</Filter>
@@ -188,16 +212,7 @@
     <ClInclude Include="CoinPowerUp.h">
       <Filter>Archivos de encabezado\Actores</Filter>
     </ClInclude>
-    <ClInclude Include="ChargeEnemy.h">
-      <Filter>Archivos de encabezado\Actores</Filter>
-    </ClInclude>
-    <ClInclude Include="EnemyProjectile.h">
-      <Filter>Archivos de encabezado\Actores</Filter>
-    </ClInclude>
     <ClInclude Include="LifeSpawner.h">
-      <Filter>Archivos de encabezado\Actores</Filter>
-    </ClInclude>
-    <ClInclude Include="ShooterEnemy.h">
       <Filter>Archivos de encabezado\Actores</Filter>
     </ClInclude>
     <ClInclude Include="InicioLayer.h">
@@ -209,14 +224,53 @@
     <ClInclude Include="Checkpoint.h">
       <Filter>Archivos de encabezado\Actores</Filter>
     </ClInclude>
-    <ClInclude Include="EnemySpawner.h">
-      <Filter>Archivos de encabezado\Actores</Filter>
+    <ClInclude Include="FlamethrowerWeapon.h">
+      <Filter>Archivos de encabezado\Actores\Armas</Filter>
     </ClInclude>
-    <ClInclude Include="ShopItem.h">
-      <Filter>Archivos de encabezado</Filter>
+    <ClInclude Include="GrenadeWeapon.h">
+      <Filter>Archivos de encabezado\Actores\Armas</Filter>
+    </ClInclude>
+    <ClInclude Include="LaserBeamWeapon.h">
+      <Filter>Archivos de encabezado\Actores\Armas</Filter>
+    </ClInclude>
+    <ClInclude Include="MeleeSwipeWeapon.h">
+      <Filter>Archivos de encabezado\Actores\Armas</Filter>
+    </ClInclude>
+    <ClInclude Include="ShotgunWeapon.h">
+      <Filter>Archivos de encabezado\Actores\Armas</Filter>
+    </ClInclude>
+    <ClInclude Include="SimpleShotWeapon.h">
+      <Filter>Archivos de encabezado\Actores\Armas</Filter>
+    </ClInclude>
+    <ClInclude Include="SMovingEnemy.h">
+      <Filter>Archivos de encabezado\Actores\Enemigos</Filter>
+    </ClInclude>
+    <ClInclude Include="ShooterEnemy.h">
+      <Filter>Archivos de encabezado\Actores\Enemigos</Filter>
+    </ClInclude>
+    <ClInclude Include="EnemySpawner.h">
+      <Filter>Archivos de encabezado\Actores\Enemigos</Filter>
+    </ClInclude>
+    <ClInclude Include="EnemyProjectile.h">
+      <Filter>Archivos de encabezado\Actores\Enemigos</Filter>
+    </ClInclude>
+    <ClInclude Include="ChargeEnemy.h">
+      <Filter>Archivos de encabezado\Actores\Enemigos</Filter>
+    </ClInclude>
+    <ClInclude Include="BasicEnemy.h">
+      <Filter>Archivos de encabezado\Actores\Enemigos</Filter>
+    </ClInclude>
+    <ClInclude Include="Enemy.h">
+      <Filter>Archivos de encabezado\Actores\Enemigos</Filter>
     </ClInclude>
     <ClInclude Include="ShopLayer.h">
-      <Filter>Archivos de encabezado</Filter>
+      <Filter>Archivos de encabezado\Layers</Filter>
+    </ClInclude>
+    <ClInclude Include="Weapon.h">
+      <Filter>Archivos de encabezado\Actores\Armas</Filter>
+    </ClInclude>
+    <ClInclude Include="ShopItem.h">
+      <Filter>Archivos de encabezado\Actores</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

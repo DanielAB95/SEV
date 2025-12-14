@@ -164,14 +164,18 @@
     <ClCompile Include="Enemy.cpp" />
     <ClCompile Include="EnemyProjectile.cpp" />
     <ClCompile Include="EnemySpawner.cpp" />
+    <ClCompile Include="FlamethrowerWeapon.cpp" />
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="GameLayer.cpp" />
     <ClCompile Include="GameOverLayer.cpp" />
+    <ClCompile Include="GrenadeWeapon.cpp" />
     <ClCompile Include="InicioLayer.cpp" />
+    <ClCompile Include="LaserBeamWeapon.cpp" />
     <ClCompile Include="Layer.cpp" />
     <ClCompile Include="LifeSpawner.cpp" />
     <ClCompile Include="LifesPowerUp.cpp" />
     <ClCompile Include="Main.cpp" />
+    <ClCompile Include="MeleeSwipeWeapon.cpp" />
     <ClCompile Include="Player.cpp" />
     <ClCompile Include="PowerUp.cpp" />
     <ClCompile Include="Projectile.cpp" />
@@ -179,10 +183,13 @@
     <ClCompile Include="ShootPowerUp.cpp" />
     <ClCompile Include="ShopItem.cpp" />
     <ClCompile Include="ShopLayer.cpp" />
+    <ClCompile Include="ShotgunWeapon.cpp" />
+    <ClCompile Include="SimpleShotWeapon.cpp" />
     <ClCompile Include="SMovingEnemy.cpp" />
     <ClCompile Include="Space.cpp" />
     <ClCompile Include="Text.cpp" />
     <ClCompile Include="Tile.cpp" />
+    <ClCompile Include="Weapon.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Actor.h" />
@@ -198,13 +205,17 @@
     <ClInclude Include="Enemy.h" />
     <ClInclude Include="EnemyProjectile.h" />
     <ClInclude Include="EnemySpawner.h" />
+    <ClInclude Include="FlamethrowerWeapon.h" />
     <ClInclude Include="Game.h" />
     <ClInclude Include="GameLayer.h" />
     <ClInclude Include="GameOverLayer.h" />
+    <ClInclude Include="GrenadeWeapon.h" />
     <ClInclude Include="InicioLayer.h" />
+    <ClInclude Include="LaserBeamWeapon.h" />
     <ClInclude Include="Layer.h" />
     <ClInclude Include="LifeSpawner.h" />
     <ClInclude Include="LifesPowerUp.h" />
+    <ClInclude Include="MeleeSwipeWeapon.h" />
     <ClInclude Include="Player.h" />
     <ClInclude Include="PowerUp.h" />
     <ClInclude Include="Projectile.h" />
@@ -212,10 +223,13 @@
     <ClInclude Include="ShootPowerUp.h" />
     <ClInclude Include="ShopItem.h" />
     <ClInclude Include="ShopLayer.h" />
+    <ClInclude Include="ShotgunWeapon.h" />
+    <ClInclude Include="SimpleShotWeapon.h" />
     <ClInclude Include="SMovingEnemy.h" />
     <ClInclude Include="Space.h" />
     <ClInclude Include="Text.h" />
     <ClInclude Include="Tile.h" />
+    <ClInclude Include="Weapon.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

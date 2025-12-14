@@ -5,7 +5,6 @@
 #include "FlamethrowerWeapon.h"
 #include "GrenadeWeapon.h"
 #include "LaserBeamWeapon.h"
-#include "Space.h"
 #include <iostream>
 
 using namespace std;
@@ -16,7 +15,7 @@ Player::Player(float x, float y, Game* game)
 	audioShoot = Audio::createAudio("res/efecto_disparo.wav", false);
 	lives = 30;
 	money = 0; // Inicializar dinero
-	
+
 	// INICIALIZAR STATS
 	maxLives = 30;
 	damage = 10;
@@ -25,7 +24,7 @@ Player::Player(float x, float y, Game* game)
 	aMoving = new Animation("res/astronauta.png", width, height,
 		192, 32, 5, 6, game);
 	animation = aMoving;
-	
+
 	// Inicializar sistema de armas
 	initWeapons();
 	currentWeaponIndex = 0;
@@ -36,34 +35,47 @@ void Player::update() {
 		shootTime--;
 	}
 	animation->update();
-	
-	// Actualizar todas las armas (para cooldowns)
-	for (auto weapon : weapons) {
-		weapon->update();
-	}
+	// NO mover aquí - el movimiento lo maneja Space::update()
+	// x = x + vx;
+	// y = y + vy;
 }
 
-void Player::shoot(Enemy* target) {
-	if (target == NULL) return;
-	
-	// Obtener arma actual
+Projectile* Player::shoot(Enemy* target) {
+	if (target == NULL) return NULL;
+
+	// Obtener el arma actual
 	Weapon* currentWeapon = getCurrentWeapon();
 	if (currentWeapon == nullptr || !currentWeapon->unlocked) {
-		return; // No se puede disparar con arma bloqueada
+		// Si no hay arma o está bloqueada, no disparar
+		return NULL;
 	}
-	
-	// El arma maneja el disparo internamente
+
+	// Verificar si el arma puede disparar (cooldown)
+	if (!currentWeapon->canFire()) {
+		return NULL;
+	}
+
+	// Verificar munición (si el arma usa munición)
+	if (currentWeapon->maxAmmo > 0 && currentWeapon->ammo <= 0) {
+		return NULL;
+	}
+
+	// El arma dispara usando su propia lógica
 	currentWeapon->fire(this, target->x, target->y);
+
+	// Consumir munición si el arma la usa
+	if (currentWeapon->maxAmmo > 0) {
+		currentWeapon->ammo--;
+	}
+
+	// Reproducir sonido de disparo
 	audioShoot->play();
+
+	// IMPORTANTE: Las armas manejan sus propios proyectiles internamente
+	// No retornamos un proyectil aquí
+	return NULL;
 }
 
-void Player::setWeaponReferences(std::list<Projectile*>* projectileList, Space* space) {
-	// Configurar referencias en todas las armas
-	for (auto weapon : weapons) {
-		weapon->setProjectileReferences(projectileList, space);
-	}
-	cout << "Referencias de proyectiles configuradas en todas las armas" << endl;
-}
 
 void Player::moveX(float axis) {
 	vx = axis * moveSpeed;
@@ -73,8 +85,9 @@ void Player::moveY(float axis) {
 	vy = axis * moveSpeed;
 }
 
+
 void Player::draw(float scrollX, float scrollY) {
-	animation->draw(x - scrollX, y- scrollY);
+	animation->draw(x - scrollX, y - scrollY);
 }
 
 void Player::upgradeHealth() {
@@ -104,7 +117,7 @@ void Player::initWeapons() {
 	weapons.push_back(new FlamethrowerWeapon(game));
 	weapons.push_back(new GrenadeWeapon(game));
 	weapons.push_back(new LaserBeamWeapon(game));
-	
+
 	cout << "Sistema de armas inicializado: " << weapons.size() << " armas creadas" << endl;
 }
 
@@ -120,7 +133,8 @@ void Player::switchWeapon(int index) {
 		currentWeaponIndex = index;
 		if (weapons[index]->unlocked) {
 			cout << "Arma cambiada a: " << weapons[index]->getName() << " (DESBLOQUEADA)" << endl;
-		} else {
+		}
+		else {
 			cout << "Arma seleccionada: " << weapons[index]->getName() << " (BLOQUEADA - Visible pero no usable)" << endl;
 		}
 	}
@@ -136,9 +150,16 @@ void Player::unlockWeapon(WeaponType type) {
 	}
 }
 
+std::vector<Projectile*> Player::getWeaponProjectiles() {
+	std::vector<Projectile*> allProjectiles;
 
+	// Recopilar proyectiles de todas las armas
+	for (auto weapon : weapons) {
+		// Cada arma debe tener una lista de proyectiles activos
+		// (esto requiere modificar las clases de armas)
+	}
 
-
-
+	return allProjectiles;
+}
 
 

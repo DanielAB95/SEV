@@ -73,8 +73,13 @@ background = new Background("res/fondo_2.png", WIDTH * 0.5, HEIGHT * 0.5, -1, ga
 }
 
 void ShopLayer::setPlayer(Player* player) {
-	this->player = player;
-	updateMoneyDisplay();
+	if (player != nullptr) {
+		this->player = player;
+		updateMoneyDisplay();
+		cout << "ShopLayer: Player asignado correctamente" << endl;
+	} else {
+		cout << "WARNING: Intentando asignar player nullptr a ShopLayer" << endl;
+	}
 }
 
 void ShopLayer::setNextLevel(int level) {

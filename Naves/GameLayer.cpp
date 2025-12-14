@@ -52,6 +52,27 @@ void GameLayer::init() {
 	// HUD inferior derecha - DISPAROS - Ajustado para no salirse
 	textShoots = new Text("Disparos: 0", WIDTH * 0.78, HEIGHT * 0.93, game);
 	
+	// HUD Sistema de Armas
+	textWeapon = new Text("Arma: Disparo Simple", WIDTH * 0.5 - 100, HEIGHT * 0.85, game);
+	weaponIcon = new Actor("res/disparo_jugador.png", WIDTH * 0.42, HEIGHT * 0.85, 32, 32, game);
+	
+	// HUD Visual de Armas - Mostrar todas las armas disponibles
+	float weaponHudStartX = WIDTH * 0.05;
+	float weaponHudY = HEIGHT * 0.80;
+	float weaponSpacing = 50;
+
+	std::vector<const char*> weaponIconPaths = {
+		"res/disparo_jugador.png", "res/melee_swipe.png", "res/disparo_jugador.png",
+		"res/flame.png", "res/recolectable.png", "res/laser_beam.png"
+	};
+
+	for (int i = 0; i < 6; i++) {
+		float xPos = weaponHudStartX + (i * weaponSpacing);
+		weaponIcons.push_back(new Actor(weaponIconPaths[i], xPos, weaponHudY, 32, 32, game));
+		weaponNumbers.push_back(new Text(std::to_string(i + 1), xPos, weaponHudY + 25, game));
+	}
+
+	weaponSelector = new Actor("res/boton_disparo.png", weaponHudStartX, weaponHudY, 40, 40, game);
 
 	background = new Background("res/fondo.png", WIDTH * 0.5, HEIGHT * 0.5, -1, game);
 	
@@ -68,6 +89,9 @@ void GameLayer::init() {
 	levelCompleted = false;
 	shopHintTimer = 5.0f;
 	levelDuration = getLevelDuration(currentLevel);
+	
+	// Inicializar hint de tienda
+	shopHint = new Text("Completa el nivel para ir a la tienda", WIDTH * 0.5 - 200, HEIGHT * 0.25, game);
 
 	loadMap("res/0.txt"); 
 
@@ -90,11 +114,9 @@ void GameLayer::processControls() {
 	// procesar controles
 	// Disparar
 	if (controlShoot) {
-		Projectile* newProjectile = player->shoot(closestEnemy());
-		if (newProjectile != NULL) {
-			space->addDynamicActor(newProjectile);
-			projectiles.push_back(newProjectile);
-		}
+		// El jugador maneja el disparo internamente usando el arma actual
+		player->shoot(closestEnemy());
+		// Ya no necesitamos agregar proyectiles aquí, cada arma lo hace
 	}
 	// Eje X
 	if (controlMoveX > 0) {
@@ -149,6 +171,24 @@ void GameLayer::keysToControls(SDL_Event event) {
 			break;
 		case SDLK_SPACE: // dispara
 			controlShoot = true;
+			break;
+		case SDLK_1:
+			player->switchWeapon(0);
+			break;
+		case SDLK_2:
+			player->switchWeapon(1);
+			break;
+		case SDLK_3:
+			player->switchWeapon(2);
+			break;
+		case SDLK_4:
+			player->switchWeapon(3);
+			break;
+		case SDLK_5:
+			player->switchWeapon(4);
+			break;
+		case SDLK_6:
+			player->switchWeapon(5);
 			break;
 		}
 	}
@@ -210,6 +250,17 @@ void GameLayer::update() {
 	lifePoints->content = to_string(player->lives) + "/" + to_string(player->maxLives);
 	textMoney->content = to_string(player->money);
 	textShoots->content = "Disparos: " + to_string(player->numberOfShoots);
+	
+	// Actualizar HUD de arma
+	Weapon* currentWeapon = player->getCurrentWeapon();
+	if (currentWeapon != nullptr) {
+		textWeapon->content = "Arma: " + currentWeapon->getName();
+		
+		// Actualizar posición del selector visual
+		float weaponHudStartX = WIDTH * 0.05;
+		float weaponSpacing = 50;
+		weaponSelector->x = weaponHudStartX + (player->currentWeaponIndex * weaponSpacing);
+	}
 
 	player->update();
 	
@@ -593,6 +644,25 @@ void GameLayer::draw() {
 	if (shopHintTimer > 0) {
 		shopHint->draw(0, 0);
 	}
+	
+	// HUD Sistema de Armas
+	weaponIcon->draw(0, 0);
+	textWeapon->draw(0, 0);
+	
+	// HUD Visual de Armas - Dibujar todos los iconos y números
+	for (int i = 0; i < weaponIcons.size(); i++) {
+		// Dibujar icono
+		weaponIcons[i]->draw(0, 0);
+		
+		// Dibujar número
+		weaponNumbers[i]->draw(0, 0);
+		
+		// Si el arma está bloqueada, dibujar con opacidad reducida (opcional)
+		// Esto se puede mejorar más adelante con texturas semitransparentes
+	}
+	
+	// Dibujar selector de arma actual
+	weaponSelector->draw(0, 0);
 
 	SDL_RenderPresent(game->renderer); // Renderiza
 }
@@ -632,14 +702,15 @@ void GameLayer::loadMapObject(char character, float x, float y)
 	switch (character) {
 	case 'P': {
 		player = new Player(x, y, game);
-		// modificación para empezar a contar desde el suelo.
 		player->y = player->y - player->height / 2;
 		space->addDynamicActor(player);
+
+		// IMPORTANTE: Configurar referencias para que las armas puedan crear proyectiles
+		player->setWeaponReferences(&projectiles, space);
+
 		Tile* tile = new Tile("res/Tierra1.png", x, y, game);
-		// modificación para empezar a contar desde el suelo.
 		tile->y = tile->y - tile->height / 2;
 		tiles.push_back(tile);
-		// NO agregar al space - no debe colisionar
 		break;
 	}
 	case '#': {
@@ -940,6 +1011,13 @@ void GameLayer::clearLevel() {
 		delete tile;
 	}
 	tiles.clear();
+	
+	// IMPORTANTE: Remover el jugador del space pero NO eliminarlo
+	// loadMap creará un nuevo jugador, por lo que este será reemplazado
+	if (player != nullptr) {
+		space->removeDynamicActor(player);
+		// NO hacer delete player aquí - se manejará en loadLevel
+	}
 }
 
 void GameLayer::nextLevel() {
