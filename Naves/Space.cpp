@@ -95,6 +95,7 @@ void Space::update() {
 
 void Space::updateMoveRight(Actor* dynamicAct) {
     if (dynamicAct->vx > 0) {
+        float originalVx = dynamicAct->vx; // Guardar velocidad original
         float possibleMovement = dynamicAct->vx;
         // El mejor "idealmente" vx partimos de ese
 
@@ -126,8 +127,13 @@ void Space::updateMoveRight(Actor* dynamicAct) {
         }
         // Ya se han comprobado todos los estáticos
         dynamicAct->x = dynamicAct->x + possibleMovement;
-        // Restringir la velocidad actual (opcional)
-        dynamicAct->vx = possibleMovement;
+        // ARREGLO: No sobrescribir vx para mantener el comportamiento de IA
+        // Solo establecer vx a 0 si hay colisión completa
+        if (possibleMovement <= 0) {
+            dynamicAct->vx = 0;
+        } else {
+            dynamicAct->vx = originalVx; // Mantener velocidad original
+        }
     }
 }
 
@@ -136,6 +142,7 @@ void Space::updateMoveRight(Actor* dynamicAct) {
 
 void Space::updateMoveLeft(Actor* dynamicAct) {
     if (dynamicAct->vx < 0) {
+        float originalVx = dynamicAct->vx; // Guardar velocidad original
         float possibleMovement = dynamicAct->vx;
         // El mejor "idealmente" vx partimos de ese
 
@@ -167,13 +174,19 @@ void Space::updateMoveLeft(Actor* dynamicAct) {
         }
         // Ya se han comprobado todos los estáticos
         dynamicAct->x = dynamicAct->x + possibleMovement;
-        // Restringir la velocidad actual (opcional)
-        dynamicAct->vx = possibleMovement;
+        // ARREGLO: No sobrescribir vx para mantener el comportamiento de IA
+        // Solo establecer vx a 0 si hay colisión completa
+        if (possibleMovement >= 0) {
+            dynamicAct->vx = 0;
+        } else {
+            dynamicAct->vx = originalVx; // Mantener velocidad original
+        }
     }
 }
 
 void Space::updateMoveTop(Actor* dynamicAct) {
     if (dynamicAct->vy < 0) {
+        float originalVy = dynamicAct->vy; // Guardar velocidad original
         float possibleMovement = dynamicAct->vy;
         // El mejor "idealmente" vy partimos de ese
 
@@ -205,8 +218,13 @@ void Space::updateMoveTop(Actor* dynamicAct) {
         }
         // Ya se han comprobado todos los estáticos
         dynamicAct->y = dynamicAct->y + possibleMovement;
-        // Restringir la velocidad actual (opcional)
-        dynamicAct->vy = possibleMovement;
+        // ARREGLO: No sobrescribir vy para mantener el comportamiento de IA
+        // Solo establecer vy a 0 si hay colisión completa
+        if (possibleMovement >= 0) {
+            dynamicAct->vy = 0;
+        } else {
+            dynamicAct->vy = originalVy; // Mantener velocidad original
+        }
     }
 }
 
@@ -215,6 +233,7 @@ void Space::updateMoveTop(Actor* dynamicAct) {
 
 void Space::updateMoveDown(Actor* dynamicAct) {
     if (dynamicAct->vy > 0) {
+        float originalVy = dynamicAct->vy; // Guardar velocidad original
         float possibleMovement = dynamicAct->vy;
         // El mejor "idealmente" vy partimos de ese
 
@@ -246,8 +265,13 @@ void Space::updateMoveDown(Actor* dynamicAct) {
         }
         // Ya se han comprobado todos los estáticos
         dynamicAct->y = dynamicAct->y + possibleMovement;
-        // Restringir la velocidad actual (opcional)
-        dynamicAct->vy = possibleMovement;
+        // ARREGLO: No sobrescribir vy para mantener el comportamiento de IA
+        // Solo establecer vy a 0 si hay colisión completa
+        if (possibleMovement <= 0) {
+            dynamicAct->vy = 0;
+        } else {
+            dynamicAct->vy = originalVy; // Mantener velocidad original
+        }
     }
 }
 
