@@ -19,6 +19,8 @@
 #include "LifeSpawner.h"
 #include "EnemySpawner.h"
 #include "Tile.h"
+#include "SuperEnemySpawner.h"
+#include "Pad.h"
 #include <list>
 #include <fstream> // Leer ficheros
 #include <sstream> // Leer líneas / String
@@ -35,6 +37,7 @@ public:
 	void update() override;
 	void draw() override;
 	void keysToControls(SDL_Event event);
+	void mouseToControls(SDL_Event event); // Nuevo método para controles táctiles
 	void loadMap(string name);
 	void loadMapObject(char character, float x, float y);
 	void calculateScroll();
@@ -101,12 +104,22 @@ public:
 	int controlMoveY = 0;
 	int controlMoveX = 0;
 
+	// Interfaz táctil
+	Pad* pad; // Joystick virtual para movimiento
+	Actor* buttonShoot; // Botón de disparo
+	std::vector<Actor*> weaponSwitchButtons; // Botones para cambiar armas
+	Actor* weaponActiveIndicator; // Indicador visual para el arma activa
+
 	list<Enemy*> enemies;
 	list<Projectile*> projectiles;
 	list<PowerUp*> powerUps;
 	list<LifeSpawner*> lifeSpawners; // Lista de spawners de vida
 	list<EnemySpawner*> enemySpawners; // Lista de spawners de enemigos
 	list<EnemyProjectile*> enemyProjectiles; // Lista de proyectiles enemigos
+	
+	// Sistema de super enemigos (reemplaza el sistema de bosses)
+	list<SuperEnemySpawner*> superEnemySpawners; // Lista de spawners de super enemigos  
+	void updateSuperEnemySpawners(); // Método para manejar super enemy spawners
 };
 
 

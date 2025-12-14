@@ -11,6 +11,8 @@ Actor::Actor(string filename, float x, float y, int width, int height, Game* gam
 	// lo que va a medir en el juego
 	this->width = width;
 	this->height = height;
+	// Inicializar estado de clic
+	clicked = false;
 }
 
 Actor::~Actor() {
@@ -54,4 +56,15 @@ void Actor::draw(float scrollX, float scrollY) {
 
 	SDL_RenderCopyEx(game->renderer,
 		texture, &source, &destination, 0, NULL, SDL_FLIP_NONE);
+}
+
+// Método para verificar si se toca el actor
+bool Actor::containsPoint(int pointX, int pointY){
+    if (pointY >= y - height / 2 &&
+        pointY <= y + height / 2 &&
+        pointX <= x + width / 2 &&
+        pointX >= x - width / 2) {
+        return true;
+    }
+    return false;
 }

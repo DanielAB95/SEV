@@ -171,12 +171,12 @@
     <ClCompile Include="GrenadeWeapon.cpp" />
     <ClCompile Include="InicioLayer.cpp" />
     <ClCompile Include="LaserBeamWeapon.cpp" />
-    <ClCompile Include="LaserBeamWeapon_new.cpp" />
     <ClCompile Include="Layer.cpp" />
     <ClCompile Include="LifeSpawner.cpp" />
     <ClCompile Include="LifesPowerUp.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="MeleeSwipeWeapon.cpp" />
+    <ClCompile Include="Pad.cpp" />
     <ClCompile Include="Player.cpp" />
     <ClCompile Include="PowerUp.cpp" />
     <ClCompile Include="Projectile.cpp" />
@@ -188,6 +188,7 @@
     <ClCompile Include="SimpleShotWeapon.cpp" />
     <ClCompile Include="SMovingEnemy.cpp" />
     <ClCompile Include="Space.cpp" />
+    <ClCompile Include="SuperEnemySpawner.cpp" />
     <ClCompile Include="Text.cpp" />
     <ClCompile Include="Tile.cpp" />
     <ClCompile Include="Weapon.cpp" />
@@ -217,6 +218,7 @@
     <ClInclude Include="LifeSpawner.h" />
     <ClInclude Include="LifesPowerUp.h" />
     <ClInclude Include="MeleeSwipeWeapon.h" />
+    <ClInclude Include="Pad.h" />
     <ClInclude Include="Player.h" />
     <ClInclude Include="PowerUp.h" />
     <ClInclude Include="Projectile.h" />
@@ -228,6 +230,7 @@
     <ClInclude Include="SimpleShotWeapon.h" />
     <ClInclude Include="SMovingEnemy.h" />
     <ClInclude Include="Space.h" />
+    <ClInclude Include="SuperEnemySpawner.h" />
     <ClInclude Include="Text.h" />
     <ClInclude Include="Tile.h" />
     <ClInclude Include="Weapon.h" />

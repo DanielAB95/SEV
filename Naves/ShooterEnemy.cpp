@@ -18,7 +18,7 @@ ShooterEnemy::ShooterEnemy(float x, float y, Game* game)
 	
 	// Sprite específico para ShooterEnemy
 	texture = game->getTexture("res/AlienTirador.png");
-	aMoving = new Animation("res/AlienTirador.png", width, height,
+	aMoving = new Animation("res/AlienTirador.png", 32, 32,
 		96, 32, 10, 3, game);
 	animation = aMoving;
 }

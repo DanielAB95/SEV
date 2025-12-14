@@ -1,4 +1,4 @@
-#include "GameLayer.h"
+ï»¿#include "GameLayer.h"
 #include "ShopLayer.h"
 #include "MeleeSwipeWeapon.h"
 #include "FlamethrowerWeapon.h"
@@ -25,6 +25,8 @@ GameLayer::GameLayer(Game* game)
 	savedPlayerMoveSpeed = 0;
 	hasPlayerData = false;
 	
+
+	
 	init();
 }
 
@@ -38,7 +40,7 @@ void GameLayer::init() {
 	points = 0;
 
 	
-	// HUD superior derecha - PUNTOS (estrella + número) - Ajustado para verse completo
+	// HUD superior derecha - PUNTOS (estrella + nÃºmero) - Ajustado para verse completo
 	backgroundPoints = new Actor("res/icono_puntos.png", WIDTH * 0.88, HEIGHT * 0.06, 32, 32, game);
 	textPoints = new Text("0", WIDTH * 0.95, HEIGHT * 0.06, game);
 	
@@ -46,11 +48,11 @@ void GameLayer::init() {
 	textLevel = new Text("NIVEL: 1/5", WIDTH * 0.15, HEIGHT * 0.06, game);
 	textTime = new Text("TIEMPO: 30", WIDTH * 0.15, HEIGHT * 0.13, game);
 	
-	// HUD inferior izquierda - VIDAS (corazón + número) - Tamaño correcto 44x36
+	// HUD inferior izquierda - VIDAS (corazÃ³n + nÃºmero) - TamaÃ±o correcto 44x36
 	backgroundLives = new Actor("res/corazon.png", WIDTH * 0.07, HEIGHT * 0.93, 44, 36, game);
 	lifePoints = new Text("0", WIDTH * 0.14, HEIGHT * 0.93, game);
 	
-	// HUD inferior centro-izquierda - DINERO (moneda + número) - Mejor espaciado
+	// HUD inferior centro-izquierda - DINERO (moneda + nÃºmero) - Mejor espaciado
 	backgroundMoney = new Actor("res/icono_moneda.png", WIDTH * 0.26, HEIGHT * 0.93, 28, 28, game);
 	textMoney = new Text("0", WIDTH * 0.33, HEIGHT * 0.93, game);
 	
@@ -82,6 +84,7 @@ void GameLayer::init() {
 	enemies.clear(); // Vaciar por si reiniciamos el juego
 	lifeSpawners.clear(); // Vaciar spawners
 	enemySpawners.clear(); // Vaciar spawners de enemigos
+	superEnemySpawners.clear(); // Vaciar spawners de super enemigos
 	enemyProjectiles.clear(); // Vaciar proyectiles enemigos
 	
 	// Reiniciar el sistema de niveles
@@ -91,10 +94,30 @@ void GameLayer::init() {
 	shopHintTimer = 5.0f;
 	levelDuration = getLevelDuration(currentLevel);
 	
+
+	
 	// Inicializar hint de tienda
 	shopHint = new Text("Completa el nivel para ir a la tienda", WIDTH * 0.5 - 200, HEIGHT * 0.25, game);
 
 	loadMap("res/0.txt"); 
+
+	// Inicializar controles tÃ¡ctiles
+	// Reposicionar pad para no tapar las armas (mÃ¡s a la izquierda y abajo)
+	pad = new Pad(WIDTH * 0.08, HEIGHT * 0.88, 80, 80, game);
+	buttonShoot = new Actor("res/boton_disparo.png", WIDTH * 0.85, HEIGHT * 0.88, 80, 80, game);
+	
+	// Botones de cambio de arma - Posicionar cerca del HUD de armas
+	float weaponButtonStartX = WIDTH * 0.05;
+	float weaponButtonY = HEIGHT * 0.70; // Encima del HUD de armas
+	float weaponButtonSpacing = 50;
+	
+	for (int i = 0; i < 6; i++) {
+		float xPos = weaponButtonStartX + (i * weaponButtonSpacing);
+		weaponSwitchButtons.push_back(new Actor("res/FlechaSeleccion.png", xPos, weaponButtonY, 25, 25, game));
+	}
+	
+	// Crear indicador para el arma activa
+	weaponActiveIndicator = new Actor("res/boton_disparo.png", weaponButtonStartX, weaponButtonY, 30, 30, game);
 
 	// Actualizar los textos con los valores iniciales del jugador
 	lifePoints->content = to_string(player->lives) + "/" + to_string(player->maxLives);
@@ -107,25 +130,30 @@ void GameLayer::init() {
 }
 
 void GameLayer::processControls() {
-	// obtener controles
-	SDL_Event event;
-	while (SDL_PollEvent(&event)) {
-		keysToControls(event);
-	}
+// obtener controles
+SDL_Event event;
+while (SDL_PollEvent(&event)) {
+keysToControls(event);
+mouseToControls(event); // NUEVO: Manejar controles tÃ¡ctiles
+}
 	// procesar controles
 	// Disparar
 	if (controlShoot) {
+		Enemy* target = closestEnemy();
+		if (target != nullptr) {
+		std::cout << "Disparando a enemigo normal" << std::endl;
+		}
+		
 		// El jugador maneja el disparo internamente usando el arma actual
-		player->shoot(closestEnemy());
-		// Ya no necesitamos agregar proyectiles aquí, cada arma lo hace
+		player->shoot(target);
+		// Ya no necesitamos agregar proyectiles aquÃ­, cada arma lo hace
 	} else {
-		// NUEVO: Cuando no se presiona ESPACIO, desactivar lanzallamas si está activo
+		// NUEVO: Cuando no se presiona ESPACIO, desactivar lanzallamas si estÃ¡ activo
 		Weapon* currentWeapon = player->getCurrentWeapon();
 		if (currentWeapon != nullptr && currentWeapon->type == WeaponType::FLAMETHROWER) {
 			FlamethrowerWeapon* flamethrower = dynamic_cast<FlamethrowerWeapon*>(currentWeapon);
 			if (flamethrower != nullptr) {
-				flamethrower->stopFiring(); // Usar el nuevo método
-				std::cout << "Lanzallamas desactivado - no se presiona ESPACIO" << std::endl;
+				flamethrower->stopFiring(); // Usar el nuevo mÃ©todo
 			}
 		}
 	}
@@ -234,6 +262,79 @@ void GameLayer::keysToControls(SDL_Event event) {
 	}
 }
 
+void GameLayer::mouseToControls(SDL_Event event) {
+	// Escalado de coordenadas para diferentes resoluciones
+	float motionX = event.motion.x;
+	float motionY = event.motion.y;
+	
+	// Ajustar coordenadas si hay escalado
+	if (game->scaleLower != 0) {
+		motionX = event.motion.x / game->scaleLower;
+		motionY = event.motion.y / game->scaleLower;
+	}
+
+	// --- CLIC (DOWN) ---
+	if (event.type == SDL_MOUSEBUTTONDOWN) {
+		// Pad: Activar y calcular direcciÃ³n inicial
+		if (pad->containsPoint(motionX, motionY)) {
+			pad->clicked = true;
+			controlMoveX = pad->getOrientationX(motionX);
+			controlMoveY = pad->getOrientationY(motionY);
+		}
+		// Disparo: Activar
+		if (buttonShoot->containsPoint(motionX, motionY)) {
+			controlShoot = true;
+		}
+		
+		// Botones de cambio de arma
+		for (int i = 0; i < weaponSwitchButtons.size(); i++) {
+			if (weaponSwitchButtons[i]->containsPoint(motionX, motionY)) {
+				player->switchWeapon(i);
+				std::cout << "Cambiando a arma " << (i + 1) << " por toque" << std::endl;
+				break;
+			}
+		}
+	}
+
+	// --- MOVIMIENTO (MOTION) ---
+	if (event.type == SDL_MOUSEMOTION) {
+		// Pad: Solo si estÃ¡ clickado
+		if (pad->clicked && pad->containsPoint(motionX, motionY)) {
+			controlMoveX = pad->getOrientationX(motionX);
+			controlMoveY = pad->getOrientationY(motionY);
+
+			// Zona muerta (Deadzone) para evitar movimientos involuntarios
+			if (controlMoveX > -20 && controlMoveX < 20) controlMoveX = 0;
+			if (controlMoveY > -20 && controlMoveY < 20) controlMoveY = 0;
+		} 
+		else {
+			// Si sale del pad o no estÃ¡ clickado, detener
+			pad->clicked = false;
+			controlMoveX = 0;
+			controlMoveY = 0;
+		}
+
+		// Disparo: Si se sale del botÃ³n, desactivar
+		if (buttonShoot->containsPoint(motionX, motionY) == false) {
+			controlShoot = false;
+		}
+	}
+
+	// --- LEVANTAR (UP) ---
+	if (event.type == SDL_MOUSEBUTTONUP) {
+		// Pad: Soltar detiene el movimiento
+		if (pad->containsPoint(motionX, motionY) || pad->clicked) {
+			pad->clicked = false;
+			controlMoveX = 0;
+			controlMoveY = 0;
+		}
+		// Disparo: Soltar desactiva
+		if (buttonShoot->containsPoint(motionX, motionY)) {
+			controlShoot = false;
+		}
+	}
+}
+
 void GameLayer::update() {
 	// Actualizar el tiempo del nivel
 	levelTime += 0.033f;
@@ -248,7 +349,7 @@ void GameLayer::update() {
 	if (timeRemaining < 0) timeRemaining = 0;
 	textTime->content = "TIEMPO: " + to_string((int)timeRemaining);
 	
-	// Verificar si se completó el nivel (tiempo cumplido y jugador vivo)
+	// Verificar si se completÃ³ el nivel (tiempo cumplido y jugador vivo)
 	if (!levelCompleted && levelTime >= levelDuration) {
 		levelCompleted = true;
 		nextLevel();
@@ -266,18 +367,21 @@ void GameLayer::update() {
 	Weapon* currentWeapon = player->getCurrentWeapon();
 	if (currentWeapon != nullptr) {
 		
-		// Actualizar posición del selector visual
+		// Actualizar posiciÃ³n del selector visual
 		float weaponHudStartX = WIDTH * 0.05;
 		float weaponSpacing = 50;
 		weaponSelector->x = weaponHudStartX + (player->currentWeaponIndex * weaponSpacing);
+		
+		// Actualizar posiciÃ³n del indicador de arma activa tÃ¡ctil
+		weaponActiveIndicator->x = weaponHudStartX + (player->currentWeaponIndex * weaponSpacing);
 	}
 
 	player->update();
 	
-	// Calcular scroll para usarlo en la lógica de enemigos
+	// Calcular scroll para usarlo en la lÃ³gica de enemigos
 	calculateScroll();
 	
-	// Actualizar enemigos según su tipo ANTES de space->update()
+	// Actualizar enemigos segÃºn su tipo ANTES de space->update()
 	for (auto const& enemy : enemies) {
 		// Identificar tipo de enemigo y actualizar comportamiento
 		BasicEnemy* basicEnemy = dynamic_cast<BasicEnemy*>(enemy);
@@ -292,7 +396,7 @@ void GameLayer::update() {
 		
 		ShooterEnemy* shooterEnemy = dynamic_cast<ShooterEnemy*>(enemy);
 		if (shooterEnemy != nullptr) {
-			// Usar la versión con scroll para detectar visibilidad
+			// Usar la versiÃ³n con scroll para detectar visibilidad
 			shooterEnemy->maintainDistance(player, scrollX, scrollY);
 			// Intentar disparar
 			EnemyProjectile* enemyProj = shooterEnemy->shoot(player);
@@ -305,6 +409,9 @@ void GameLayer::update() {
 		enemy->update();
 	}
 	
+	// NUEVO: Actualizar spawners de super enemigos
+	updateSuperEnemySpawners();
+	
 	// NUEVO: Procesar rebotes de proyectiles enemigos ANTES de space->update()
 	// Los proyectiles enemigos NO deben ser bloqueados por Space, deben rebotar
 	list<EnemyProjectile*> deleteEnemyProjectilesBounce;
@@ -314,12 +421,12 @@ void GameLayer::update() {
 		space->removeDynamicActor(enemyProj);
 	}
 	
-	// IMPORTANTE: Actualizar space DESPUÉS de establecer las velocidades
+	// IMPORTANTE: Actualizar space DESPUÃ‰S de establecer las velocidades
 	space->update();
 	
 	// Ahora procesar proyectiles enemigos con rebotes
 	for (auto const& enemyProj : enemyProjectiles) {
-		// Guardar posición y velocidad anterior
+		// Guardar posiciÃ³n y velocidad anterior
 		float oldX = enemyProj->x;
 		float oldY = enemyProj->y;
 		float oldVx = enemyProj->vx;
@@ -329,23 +436,23 @@ void GameLayer::update() {
 		float newX = oldX + enemyProj->vx;
 		float newY = oldY + enemyProj->vy;
 		
-		// Probar nueva posición
+		// Probar nueva posiciÃ³n
 		enemyProj->x = newX;
 		enemyProj->y = newY;
 		
 		bool collidesHorizontal = false;
 		bool collidesVertical = false;
 		
-		// Verificar si hay colisión en la nueva posición
+		// Verificar si hay colisiÃ³n en la nueva posiciÃ³n
 		if (space->checkCollisionDirection(enemyProj, collidesHorizontal, collidesVertical)) {
-			// Si alcanzó el máximo de rebotes, marcarlo para eliminar
+			// Si alcanzÃ³ el mÃ¡ximo de rebotes, marcarlo para eliminar
 			if (enemyProj->currentBounces >= enemyProj->maxBounces) {
 				enemyProj->x = oldX;
 				enemyProj->y = oldY;
 				deleteEnemyProjectilesBounce.push_back(enemyProj);
-				cout << "Proyectil alcanzó máximo de rebotes (" << enemyProj->maxBounces << ") - Eliminando" << endl;
+				cout << "Proyectil alcanzÃ³ mÃ¡ximo de rebotes (" << enemyProj->maxBounces << ") - Eliminando" << endl;
 			} else {
-				// Hacer rebotar según la dirección de colisión
+				// Hacer rebotar segÃºn la direcciÃ³n de colisiÃ³n
 				bool didBounce = false;
 				
 				if (collidesHorizontal) {
@@ -357,34 +464,34 @@ void GameLayer::update() {
 					didBounce = true;
 				}
 				
-				// Si rebotó en ambos ejes simultáneamente, el contador se incrementa dos veces
+				// Si rebotÃ³ en ambos ejes simultÃ¡neamente, el contador se incrementa dos veces
 				// Compensar para que solo cuente como un rebote
 				if (collidesHorizontal && collidesVertical && didBounce) {
 					enemyProj->currentBounces--;
 				}
 				
-				// Calcular nueva posición con velocidades invertidas
+				// Calcular nueva posiciÃ³n con velocidades invertidas
 				// Si colisiona en X, mantener Y original + movimiento en Y
 				// Si colisiona en Y, mantener X original + movimiento en X
 				if (collidesHorizontal && !collidesVertical) {
-					// Rebote horizontal: X vuelve a posición original, Y se mueve normalmente
+					// Rebote horizontal: X vuelve a posiciÃ³n original, Y se mueve normalmente
 					enemyProj->x = oldX;
 					enemyProj->y = oldY + enemyProj->vy;
 				} else if (collidesVertical && !collidesHorizontal) {
-					// Rebote vertical: Y vuelve a posición original, X se mueve normalmente
+					// Rebote vertical: Y vuelve a posiciÃ³n original, X se mueve normalmente
 					enemyProj->x = oldX + enemyProj->vx;
 					enemyProj->y = oldY;
 				} else {
-					// Rebote en esquina: ambos ejes vuelven a posición original
+					// Rebote en esquina: ambos ejes vuelven a posiciÃ³n original
 					enemyProj->x = oldX;
 					enemyProj->y = oldY;
 				}
 			}
 		}
-		// Si no hay colisión, la nueva posición ya está aplicada
+		// Si no hay colisiÃ³n, la nueva posiciÃ³n ya estÃ¡ aplicada
 	}
 	
-	// Eliminar proyectiles que alcanzaron el límite de rebotes
+	// Eliminar proyectiles que alcanzaron el lÃ­mite de rebotes
 	for (auto const& delProj : deleteEnemyProjectilesBounce) {
 		enemyProjectiles.remove(delProj);
 		delete delProj;
@@ -406,12 +513,12 @@ void GameLayer::update() {
 	for (auto const& spawner : lifeSpawners) {
 		spawner->update();
 		if (spawner->shouldSpawn()) {
-			// Crear un power-up de vida en la posición del spawner
+			// Crear un power-up de vida en la posiciÃ³n del spawner
 			LifesPowerUp* lifePowerUp = new LifesPowerUp(spawner->x, spawner->y, game);
 			powerUps.push_back(lifePowerUp);
 			space->addDynamicActor(lifePowerUp);
 			spawner->resetTimer();
-			cout << "Spawner generó un corazón en posición (" << spawner->x << ", " << spawner->y << ")" << endl;
+			cout << "Spawner generÃ³ un corazÃ³n en posiciÃ³n (" << spawner->x << ", " << spawner->y << ")" << endl;
 		}
 	}
 	
@@ -436,13 +543,13 @@ void GameLayer::update() {
 			}
 			
 			if (newEnemy != nullptr) {
-				newEnemy->scaleStatsForLevel(currentLevel); // Escalar stats según nivel
+				newEnemy->scaleStatsForLevel(currentLevel); // Escalar stats segÃºn nivel
 				enemies.push_back(newEnemy);
 				space->addDynamicActor(newEnemy);
 				spawner->currentEnemies++;
 				spawner->resetTimer();
-				cout << "Spawner generó enemigo tipo " << spawner->enemyType 
-				     << " en posición (" << spawner->x << ", " << spawner->y << ")" << endl;
+				cout << "Spawner generÃ³ enemigo tipo " << spawner->enemyType 
+				     << " en posiciÃ³n (" << spawner->x << ", " << spawner->y << ")" << endl;
 			}
 		}
 	}
@@ -457,13 +564,25 @@ void GameLayer::update() {
 	// Colisiones
 	for (auto const& enemy : enemies) {
 		if (player->isOverlap(enemy)) {
-			player->lives -= enemy->damage; // Usar el daño del enemigo
-			bool eInList = std::find(deleteEnemies.begin(),
-				deleteEnemies.end(),
-				enemy) != deleteEnemies.end();
-			if (!eInList) {
-				deleteEnemies.push_back(enemy);
+			player->lives -= enemy->damage; // Usar el daÃ±o del enemigo
+			
+			// NUEVO: Verificar si es un super enemigo (por sus stats de boss)
+			bool isSuperEnemy = (enemy->coinReward >= 1800); // Super enemigos dan 1800+ monedas
+			
+			if (!isSuperEnemy) {
+				// Solo eliminar enemigos NORMALES al tocar al jugador
+				bool eInList = std::find(deleteEnemies.begin(),
+					deleteEnemies.end(),
+					enemy) != deleteEnemies.end();
+				if (!eInList) {
+					deleteEnemies.push_back(enemy);
+				}
+			} else {
+				// Super enemigos NO se eliminan al tocar - siguen atacando
+				std::cout << "Â¡SUPER ENEMIGO golpeÃ³ al jugador! DaÃ±o: " << enemy->damage 
+				          << " - NO se elimina, sigue en combate!" << std::endl;
 			}
+			
 			if (player->lives <= 0) {
 				game->layer = game->gameOverLayer;
 				game->layer->init();
@@ -472,10 +591,13 @@ void GameLayer::update() {
 		}
 	}
 	
-	// Colisión proyectiles enemigos con jugador
+
+
+	
+	// ColisiÃ³n proyectiles enemigos con jugador
 	for (auto const& enemyProj : enemyProjectiles) {
 		if (player->isOverlap(enemyProj)) {
-			player->lives -= 8; // Proyectiles enemigos hacen daño moderado
+			player->lives -= 8; // Proyectiles enemigos hacen daÃ±o moderado
 			bool pInList = std::find(deleteEnemyProjectiles.begin(),
 				deleteEnemyProjectiles.end(),
 				enemyProj) != deleteEnemyProjectiles.end();
@@ -492,7 +614,7 @@ void GameLayer::update() {
 
 	for (auto const& powerUp : powerUps) {
 		if (player->isOverlap(powerUp)) {
-			cout << "¡Colision con power-up detectada!" << endl;
+			cout << "Â¡Colision con power-up detectada!" << endl;
 			powerUp->effect(player);
 			bool pInList = std::find(deletePowerUps.begin(),
 				deletePowerUps.end(),
@@ -517,8 +639,8 @@ void GameLayer::update() {
 	}
 	
 	// NOTA: Los proyectiles enemigos NO se eliminan cuando salen de pantalla
-	// Solo se eliminan al golpear al jugador o al alcanzar el máximo de rebotes (6)
-	// Ya no hay código aquí que los elimine por salir de pantalla
+	// Solo se eliminan al golpear al jugador o al alcanzar el mÃ¡ximo de rebotes (6)
+	// Ya no hay cÃ³digo aquÃ­ que los elimine por salir de pantalla
 
 	for (auto const& powerUp : powerUps) {
 		if (powerUp->isInRender(scrollX, scrollY) == false && powerUp->x <= 0) {
@@ -536,7 +658,7 @@ void GameLayer::update() {
 	for (auto const& enemy : enemies) {
 		for (auto const& projectile : projectiles) {
 			if (enemy->isOverlap(projectile)) {
-				enemy->lives -= projectile->damage; // Usar el daño del proyectil
+				enemy->lives -= projectile->damage; // Usar el daÃ±o del proyectil
 
 				bool pInList = std::find(deleteProjectiles.begin(),
 					deleteProjectiles.end(),
@@ -563,16 +685,19 @@ void GameLayer::update() {
 		}
 	}
 
-	// MOVER AQUÍ: Colisiones arma melé con enemigos (ANTES de eliminar)
+					
+					
+					
+	
+
+	// MOVER AQUÃ: Colisiones arma melÃ© con enemigos (ANTES de eliminar)
 	Weapon* specialWeapon = player->getCurrentWeapon();
-	//std::cout << "Weapon check - Current weapon type: " << (int)specialWeapon->type << std::endl;
 	if (specialWeapon != nullptr && specialWeapon->type == WeaponType::MELEE_SWIPE) {
 		MeleeSwipeWeapon* meleeWeapon = dynamic_cast<MeleeSwipeWeapon*>(specialWeapon);
 		if (meleeWeapon != nullptr && meleeWeapon->isActive) {
-			std::cout << "Procesando colisiones arma melé..." << std::endl;
 			meleeWeapon->checkEnemyCollisions(&enemies);
 
-			// Verificar si algún enemigo murió por el arma melé
+			// Verificar si algÃºn enemigo muriÃ³ por el arma melÃ©
 			for (auto const& enemy : enemies) {
 				if (enemy->lives <= 0) {
 					bool eInList = std::find(deleteEnemies.begin(),
@@ -589,22 +714,20 @@ void GameLayer::update() {
 						points++;
 						textPoints->content = to_string(points);
 
-						std::cout << "¡Enemigo eliminado con arma melé!" << std::endl;
+						std::cout << "Â¡Enemigo eliminado con arma melÃ©!" << std::endl;
 					}
 				}
 			}
 		}
 	}
 	
-	// MOVER AQUÍ: Colisiones lanzallamas con enemigos (ANTES de eliminar)
+	// MOVER AQUÃ: Colisiones lanzallamas con enemigos (ANTES de eliminar)
 	if (specialWeapon != nullptr && specialWeapon->type == WeaponType::FLAMETHROWER) {
 		FlamethrowerWeapon* flamethrowerWeapon = dynamic_cast<FlamethrowerWeapon*>(specialWeapon);
-		std::cout << "Arma lanzallamas detectada, isFiring: " << (flamethrowerWeapon ? flamethrowerWeapon->isFiring : false) << std::endl;
 		if (flamethrowerWeapon != nullptr && flamethrowerWeapon->isFiring) {
-			std::cout << "Procesando colisiones lanzallamas..." << std::endl;
 			flamethrowerWeapon->checkEnemyCollisions(&enemies);
 
-			// Verificar si algún enemigo murió por el lanzallamas
+			// Verificar si algÃºn enemigo muriÃ³ por el lanzallamas
 			for (auto const& enemy : enemies) {
 				if (enemy->lives <= 0) {
 					bool eInList = std::find(deleteEnemies.begin(),
@@ -621,7 +744,7 @@ void GameLayer::update() {
 						points++;
 						textPoints->content = to_string(points);
 
-						std::cout << "¡Enemigo quemado por lanzallamas!" << std::endl;
+						std::cout << "Â¡Enemigo quemado por lanzallamas!" << std::endl;
 					}
 				}
 			}
@@ -632,10 +755,9 @@ void GameLayer::update() {
 	if (specialWeapon != nullptr && specialWeapon->type == WeaponType::GRENADE) {
 		GrenadeWeapon* grenadeWeapon = dynamic_cast<GrenadeWeapon*>(specialWeapon);
 		if (grenadeWeapon != nullptr) {
-			std::cout << "Procesando colisiones granada..." << std::endl;
 			grenadeWeapon->checkExplosionCollisions(&enemies);
 
-			// Verificar si algún enemigo murió por la granada
+			// Verificar si algÃºn enemigo muriÃ³ por la granada
 			for (auto const& enemy : enemies) {
 				if (enemy->lives <= 0) {
 					bool eInList = std::find(deleteEnemies.begin(),
@@ -652,21 +774,20 @@ void GameLayer::update() {
 						points++;
 						textPoints->content = to_string(points);
 
-						std::cout << "¡Enemigo eliminado por explosión!" << std::endl;
+						std::cout << "Â¡Enemigo eliminado por explosiÃ³n!" << std::endl;
 					}
 				}
 			}
 		}
 	}
 	
-	// NUEVO: Colisiones láser con enemigos (ANTES de eliminar)
+	// NUEVO: Colisiones lÃ¡ser con enemigos (ANTES de eliminar)
 	if (specialWeapon != nullptr && specialWeapon->type == WeaponType::LASER_BEAM) {
 		LaserBeamWeapon* laserWeapon = dynamic_cast<LaserBeamWeapon*>(specialWeapon);
 		if (laserWeapon != nullptr && laserWeapon->isActive) {
-			std::cout << "Procesando colisiones láser..." << std::endl;
 			laserWeapon->checkBeamCollisions(&enemies);
 
-			// Verificar si algún enemigo murió por el láser
+			// Verificar si algÃºn enemigo muriÃ³ por el lÃ¡ser
 			for (auto const& enemy : enemies) {
 				if (enemy->lives <= 0) {
 					bool eInList = std::find(deleteEnemies.begin(),
@@ -683,7 +804,7 @@ void GameLayer::update() {
 						points++;
 						textPoints->content = to_string(points);
 
-						std::cout << "¡Enemigo vaporizado por láser!" << std::endl;
+						std::cout << "Â¡Enemigo vaporizado por lÃ¡ser!" << std::endl;
 					}
 				}
 			}
@@ -722,72 +843,7 @@ void GameLayer::update() {
 	}
 	deleteEnemyProjectiles.clear();
 
-	// NUEVO: Colisiones arma melé con enemigos
-	Weapon* meleeWeaponCheck = player->getCurrentWeapon();
-	//std::cout << "Weapon check - Current weapon type: " << (int)meleeWeaponCheck->type << std::endl;
-	if (meleeWeaponCheck != nullptr && meleeWeaponCheck->type == WeaponType::MELEE_SWIPE) {
-		MeleeSwipeWeapon* meleeWeapon = dynamic_cast<MeleeSwipeWeapon*>(meleeWeaponCheck);
-		if (meleeWeapon != nullptr && meleeWeapon->isActive) {
-			std::cout << "Procesando colisiones arma melé..." << std::endl;
-			meleeWeapon->checkEnemyCollisions(&enemies);
-
-			// Verificar si algún enemigo murió por el arma melé
-			for (auto const& enemy : enemies) {
-				if (enemy->lives <= 0) {
-					bool eInList = std::find(deleteEnemies.begin(),
-						deleteEnemies.end(),
-						enemy) != deleteEnemies.end();
-					if (!eInList) {
-						deleteEnemies.push_back(enemy);
-						// Crear moneda cuando muere el enemigo
-						CoinPowerUp* coin = new CoinPowerUp(enemy->x, enemy->y, enemy->coinReward, game);
-						powerUps.push_back(coin);
-						space->addDynamicActor(coin);
-
-						player->numberOfShoots++; // Dar disparo extra
-						points++;
-						textPoints->content = to_string(points);
-
-						std::cout << "¡Enemigo eliminado con arma melé!" << std::endl;
-					}
-				}
-			}
-		}
-	}
-	
-	// NUEVO: Colisiones lanzallamas con enemigos
-	if (meleeWeaponCheck != nullptr && meleeWeaponCheck->type == WeaponType::FLAMETHROWER) {
-		FlamethrowerWeapon* flamethrowerWeapon = dynamic_cast<FlamethrowerWeapon*>(meleeWeaponCheck);
-		std::cout << "Arma lanzallamas detectada, isFiring: " << (flamethrowerWeapon ? flamethrowerWeapon->isFiring : false) << std::endl;
-		if (flamethrowerWeapon != nullptr && flamethrowerWeapon->isFiring) {
-			std::cout << "Procesando colisiones lanzallamas..." << std::endl;
-			flamethrowerWeapon->checkEnemyCollisions(&enemies);
-
-			// Verificar si algún enemigo murió por el lanzallamas
-			for (auto const& enemy : enemies) {
-				if (enemy->lives <= 0) {
-					bool eInList = std::find(deleteEnemies.begin(),
-						deleteEnemies.end(),
-						enemy) != deleteEnemies.end();
-					if (!eInList) {
-						deleteEnemies.push_back(enemy);
-						// Crear moneda cuando muere el enemigo
-						CoinPowerUp* coin = new CoinPowerUp(enemy->x, enemy->y, enemy->coinReward, game);
-						powerUps.push_back(coin);
-						space->addDynamicActor(coin);
-
-						player->numberOfShoots++; // Dar disparo extra
-						points++;
-						textPoints->content = to_string(points);
-
-						std::cout << "¡Enemigo quemado por lanzallamas!" << std::endl;
-					}
-				}
-			}
-		}
-	}
-	
-	// NUEVO: Verificar que los enemigos no salgan del mapa (corrección adicional)
+	// NUEVO: Verificar que los enemigos no salgan del mapa (correcciÃ³n adicional)
 	const float MAP_MARGIN = 80.0f;
 	const float MAP_MIN_X = MAP_MARGIN;
 	const float MAP_MAX_X = 27 * 32 - MAP_MARGIN; // Ancho del mapa - margen
@@ -795,20 +851,18 @@ void GameLayer::update() {
 	const float MAP_MAX_Y = 27 * 32 - MAP_MARGIN; // Alto del mapa - margen
 	
 	for (auto const& enemy : enemies) {
-		// Corregir posición si está fuera de los límites
+		// Corregir posiciÃ³n si estÃ¡ fuera de los lÃ­mites
 		if (enemy->x < MAP_MIN_X) enemy->x = MAP_MIN_X;
 		if (enemy->x > MAP_MAX_X) enemy->x = MAP_MAX_X;
 		if (enemy->y < MAP_MIN_Y) enemy->y = MAP_MIN_Y;
 		if (enemy->y > MAP_MAX_Y) enemy->y = MAP_MAX_Y;
 	}
-
-	//std::cout << "update GameLayer" << endl;
 }
 
 void GameLayer::draw() {
 	calculateScroll();
 	
-	// 1. FONDO (más atrás)
+	// 1. FONDO (mÃ¡s atrÃ¡s)
 	background->draw();
 
 	// 2. TILES/SUELO
@@ -822,6 +876,10 @@ void GameLayer::draw() {
 	}
 	for (auto const& spawner : enemySpawners) {
 		spawner->draw(scrollX, scrollY);
+	}
+	
+	for (auto const& superSpawner : superEnemySpawners) {
+		superSpawner->draw(scrollX, scrollY);
 	}
 
 	// 4. POWER-UPS (en el suelo)
@@ -841,12 +899,14 @@ void GameLayer::draw() {
 	for (auto const& enemy : enemies) {
 		enemy->draw(scrollX, scrollY);
 	}
+	
+
 
 	// 7. JUGADOR (encima de enemigos)
 	player->draw(scrollX, scrollY);
 	
 	// 8. ARMAS ESPECIALES (encima del jugador)
-	// Renderizar el arma melé si está activa
+	// Renderizar el arma melÃ© si estÃ¡ activa
 	Weapon* drawWeapon = player->getCurrentWeapon();
 	if (drawWeapon != nullptr && drawWeapon->type == WeaponType::MELEE_SWIPE) {
 		MeleeSwipeWeapon* meleeWeapon = dynamic_cast<MeleeSwipeWeapon*>(drawWeapon);
@@ -854,21 +914,21 @@ void GameLayer::draw() {
 			meleeWeapon->draw(scrollX, scrollY);
 		}
 	}
-	// Renderizar el lanzallamas si está activo
+	// Renderizar el lanzallamas si estÃ¡ activo
 	if (drawWeapon != nullptr && drawWeapon->type == WeaponType::FLAMETHROWER) {
 		FlamethrowerWeapon* flamethrowerWeapon = dynamic_cast<FlamethrowerWeapon*>(drawWeapon);
 		if (flamethrowerWeapon != nullptr) {
 			flamethrowerWeapon->draw(scrollX, scrollY);
 		}
 	}
-	// Renderizar las granadas si están activas
+	// Renderizar las granadas si estÃ¡n activas
 	if (drawWeapon != nullptr && drawWeapon->type == WeaponType::GRENADE) {
 		GrenadeWeapon* grenadeWeapon = dynamic_cast<GrenadeWeapon*>(drawWeapon);
 		if (grenadeWeapon != nullptr) {
 			grenadeWeapon->draw(scrollX, scrollY);
 		}
 	}
-	// Renderizar el láser si está activo
+	// Renderizar el lÃ¡ser si estÃ¡ activo
 	if (drawWeapon != nullptr && drawWeapon->type == WeaponType::LASER_BEAM) {
 		LaserBeamWeapon* laserWeapon = dynamic_cast<LaserBeamWeapon*>(drawWeapon);
 		if (laserWeapon != nullptr) {
@@ -893,20 +953,38 @@ void GameLayer::draw() {
 		shopHint->draw(0, 0);
 	}
 	
-	// HUD Visual de Armas - Dibujar todos los iconos y números
+	// HUD Visual de Armas - Dibujar todos los iconos y nÃºmeros
 	for (int i = 0; i < weaponIcons.size(); i++) {
 		// Dibujar icono
 		weaponIcons[i]->draw(0, 0);
 		
-		// Dibujar número
+		// Dibujar nÃºmero
 		weaponNumbers[i]->draw(0, 0);
 		
-		// Si el arma está bloqueada, dibujar con opacidad reducida (opcional)
-		// Esto se puede mejorar más adelante con texturas semitransparentes
+		// Si el arma estÃ¡ bloqueada, dibujar con opacidad reducida (opcional)
+		// Esto se puede mejorar mÃ¡s adelante con texturas semitransparentes
 	}
 	
 	// Dibujar selector de arma actual
 	weaponSelector->draw(0, 0);
+
+	// Dibujar controles tÃ¡ctiles (encima de todo)
+	pad->draw(0, 0);
+	buttonShoot->draw(0, 0);
+	
+	// Dibujar botones de cambio de arma
+	for (int i = 0; i < weaponSwitchButtons.size(); i++) {
+		weaponSwitchButtons[i]->draw(0, 0);
+		
+		// Resaltar el botÃ³n de la arma activa
+		if (i == player->currentWeaponIndex) {
+			// Dibujar un indicador adicional para el arma seleccionada
+			Actor* activeIndicator = new Actor("res/boton_disparo.png", 
+				weaponSwitchButtons[i]->x, weaponSwitchButtons[i]->y, 30, 30, game);
+			activeIndicator->draw(0, 0);
+			delete activeIndicator;
+		}
+	}
 
 	SDL_RenderPresent(game->renderer); // Renderiza
 }
@@ -921,11 +999,11 @@ void GameLayer::loadMap(string name) {
 		return;
 	}
 	else {
-		// Por línea
+		// Por lÃ­nea
 		for (int i = 0; getline(streamFile, line); i++) {
 			istringstream streamLine(line);
 			mapWidth = line.length() * 32; // Ancho del mapa en pixels
-			// Por carácter (en cada línea)
+			// Por carÃ¡cter (en cada lÃ­nea)
 			for (int j = 0; j<line.length(); j++) {
 				streamLine >> character; // Leer character 
 				cout << character;
@@ -973,7 +1051,7 @@ void GameLayer::loadMapObject(char character, float x, float y)
 
 		const char* selected = names[dist(gen)];
 		Tile* tile = new Tile(selected, x, y, game);
-		// modificación para empezar a contar desde el suelo.
+		// modificaciÃ³n para empezar a contar desde el suelo.
 		tile->y = tile->y - tile->height / 2;
 		tiles.push_back(tile);
 		// NO agregar al space - no debe colisionar
@@ -987,21 +1065,21 @@ void GameLayer::loadMapObject(char character, float x, float y)
 		enemies.push_back(basicEnemy);
 		space->addDynamicActor(basicEnemy);
 		Tile* tile = new Tile("res/Tierra1.png", x, y, game);
-		// modificación para empezar a contar desde el suelo.
+		// modificaciÃ³n para empezar a contar desde el suelo.
 		tile->y = tile->y - tile->height / 2;
 		tiles.push_back(tile);
 		// NO agregar al space - no debe colisionar
 		break;
 	}
 	case 'R': {
-		// ChargeEnemy - Embiste cuando está alineado (R = Ram/Ramming)
+		// ChargeEnemy - Embiste cuando estÃ¡ alineado (R = Ram/Ramming)
 		ChargeEnemy* chargeEnemy = new ChargeEnemy(x, y, game);
 		chargeEnemy->scaleStatsForLevel(currentLevel); // Escalar stats
 		chargeEnemy->y = chargeEnemy->y - chargeEnemy->height / 2;
 		enemies.push_back(chargeEnemy);
 		space->addDynamicActor(chargeEnemy);
 		Tile* tile = new Tile("res/Tierra1.png", x, y, game);
-		// modificación para empezar a contar desde el suelo.
+		// modificaciÃ³n para empezar a contar desde el suelo.
 		tile->y = tile->y - tile->height / 2;
 		tiles.push_back(tile);
 		// NO agregar al space - no debe colisionar
@@ -1015,79 +1093,79 @@ void GameLayer::loadMapObject(char character, float x, float y)
 		enemies.push_back(shooterEnemy);
 		space->addDynamicActor(shooterEnemy);
 		Tile* tile = new Tile("res/Tierra1.png", x, y, game);
-		// modificación para empezar a contar desde el suelo.
+		// modificaciÃ³n para empezar a contar desde el suelo.
 		tile->y = tile->y - tile->height / 2;
 		tiles.push_back(tile);
 		// NO agregar al space - no debe colisionar
 		break;
 	}
 	case '0': {
-		//"Límite del mapa"
+		//"LÃ­mite del mapa"
 		Tile* tile = new Tile("res/BordeTL.png", x, y, game);
-		// modificación para empezar a contar desde el suelo.
+		// modificaciÃ³n para empezar a contar desde el suelo.
 		tile->y = tile->y - tile->height / 2;
 		tiles.push_back(tile);
 		space->addStaticActor(tile);
 		break;
 	}
 	case '1': {
-		//"Límite del mapa"
+		//"LÃ­mite del mapa"
 		Tile* tile = new Tile("res/BordeT.png", x, y, game);
-		// modificación para empezar a contar desde el suelo.
+		// modificaciÃ³n para empezar a contar desde el suelo.
 		tile->y = tile->y - tile->height / 2;
 		tiles.push_back(tile);
 		space->addStaticActor(tile);
 		break;
 	}
 	case '2': {
-		//"Límite del mapa"
+		//"LÃ­mite del mapa"
 		Tile* tile = new Tile("res/BordeTR.png", x, y, game);
-		// modificación para empezar a contar desde el suelo.
+		// modificaciÃ³n para empezar a contar desde el suelo.
 		tile->y = tile->y - tile->height / 2;
 		tiles.push_back(tile);
 		space->addStaticActor(tile);
 		break;
 	}
 	case '3': {
-		//"Límite del mapa"
+		//"LÃ­mite del mapa"
 		Tile* tile = new Tile("res/BordeL.png", x, y, game);
-		// modificación para empezar a contar desde el suelo.
+		// modificaciÃ³n para empezar a contar desde el suelo.
 		tile->y = tile->y - tile->height / 2;
 		tiles.push_back(tile);
 		space->addStaticActor(tile);
 		break;
 	}
 	case '4': {
-		//"Límite del mapa"
+		//"LÃ­mite del mapa"
 		Tile* tile = new Tile("res/BordeR.png", x, y, game);
-		// modificación para empezar a contar desde el suelo.
+		// modificaciÃ³n para empezar a contar desde el suelo.
 		tile->y = tile->y - tile->height / 2;
 		tiles.push_back(tile);
 		space->addStaticActor(tile);
 		break;
 	}
 	case '5': {
-		//"Límite del mapa"
+		//"LÃ­mite del mapa"
 		Tile* tile = new Tile("res/BordeBL.png", x, y, game);
-		// modificación para empezar a contar desde el suelo.
+		// modificaciÃ³n para empezar a contar desde el suelo.
 		tile->y = tile->y - tile->height / 2;
 		tiles.push_back(tile);
 		space->addStaticActor(tile);
 		break;
 	}
 	case '6': {
-		//"Límite del mapa"
+		//"LÃ­mite del mapa"
 		Tile* tile = new Tile("res/BordeB.png", x, y, game);
-		// modificación para empezar a contar desde el suelo.
+		// modificaciÃ³n para empezar a contar desde el suelo.
 		tile->y = tile->y - tile->height / 2;
 		tiles.push_back(tile);
 		space->addStaticActor(tile);
 		break;
 	}
 	case '7': {
-		//"Límite del mapa"
+		//"LÃ­mite del mapa"
 		Tile* tile = new Tile("res/BordeBR.png", x, y, game);
-		// modificación para empezar a contar desde el suelo.
+		// modificaciÃ³n para empezar a contar desde el suelo.
 		tile->y = tile->y - tile->height / 2;
 		tiles.push_back(tile);
 		space->addStaticActor(tile);
@@ -1122,12 +1200,12 @@ void GameLayer::loadMapObject(char character, float x, float y)
 		LifeSpawner* spawner = new LifeSpawner(x, y, game);
 		spawner->y = spawner->y - spawner->height / 2;
 		lifeSpawners.push_back(spawner);
-		// NO añadir al space - los spawners no colisionan
+		// NO aÃ±adir al space - los spawners no colisionan
 		cout << "Spawner de vida creado en (" << x << ", " << y << ")" << endl;
 		break;
 	}
 	case 'b': {
-		// Spawner de BasicEnemy (minúscula 'b')
+		// Spawner de BasicEnemy (minÃºscula 'b')
 		EnemySpawner* spawner = new EnemySpawner(x, y, "B", game);
 		spawner->y = spawner->y - spawner->height / 2;
 		enemySpawners.push_back(spawner);
@@ -1135,7 +1213,7 @@ void GameLayer::loadMapObject(char character, float x, float y)
 		break;
 	}
 	case 'r': {
-		// Spawner de ChargeEnemy (minúscula 'r')
+		// Spawner de ChargeEnemy (minÃºscula 'r')
 		EnemySpawner* spawner = new EnemySpawner(x, y, "R", game);
 		spawner->y = spawner->y - spawner->height / 2;
 		enemySpawners.push_back(spawner);
@@ -1143,11 +1221,21 @@ void GameLayer::loadMapObject(char character, float x, float y)
 		break;
 	}
 	case 't': {
-		// Spawner de ShooterEnemy (minúscula 't')
+		// Spawner de ShooterEnemy (minÃºscula 't')
 		EnemySpawner* spawner = new EnemySpawner(x, y, "T", game);
 		spawner->y = spawner->y - spawner->height / 2;
 		enemySpawners.push_back(spawner);
 		cout << "Spawner de ShooterEnemy creado en (" << x << ", " << y << ")" << endl;
+		break;
+	}
+	
+
+	case 'M': {
+		// NUEVO: SuperEnemySpawner Aleatorio (M = Mega enemy)
+		SuperEnemySpawner* superSpawner = new SuperEnemySpawner(x, y, game);
+		superSpawner->y = superSpawner->y - superSpawner->height / 2;
+		superEnemySpawners.push_back(superSpawner);
+		cout << "SuperEnemySpawner aleatorio creado en (" << x << ", " << y << ")" << endl;
 		break;
 	}
 	}
@@ -1195,7 +1283,7 @@ void GameLayer::loadLevel(int level) {
 		player->moveSpeed = savedPlayerMoveSpeed;
 		player->weapons = savedPlayerWeapons;
 		cout << "Estado del jugador restaurado - Dinero: " << player->money << ", Vidas: " << player->lives << ", DISPAROS: " << player->numberOfShoots << endl;
-		cout << "Mejoras restauradas - Vida máxima: " << player->maxLives << ", Daño: " << player->damage << ", Velocidad: " << player->moveSpeed << endl;
+		cout << "Mejoras restauradas - Vida mÃ¡xima: " << player->maxLives << ", DaÃ±o: " << player->damage << ", Velocidad: " << player->moveSpeed << endl;
 		
 		// Actualizar textos del HUD con los valores restaurados
 		lifePoints->content = to_string(player->lives) + "/" + to_string(player->maxLives);
@@ -1250,6 +1338,14 @@ void GameLayer::clearLevel() {
 	}
 	enemySpawners.clear();
 	
+
+	
+	// NUEVO: Limpiar spawners de super enemigos
+	for (auto const& superSpawner : superEnemySpawners) {
+		delete superSpawner;
+	}
+	superEnemySpawners.clear();
+	
 	// Limpiar tiles
 	for (auto const& tile : tiles) {
 		space->removeStaticActor(tile);
@@ -1257,12 +1353,15 @@ void GameLayer::clearLevel() {
 	}
 	tiles.clear();
 	
+	
 	// IMPORTANTE: Remover el jugador del space pero NO eliminarlo
-	// loadMap creará un nuevo jugador, por lo que este será reemplazado
+	// loadMap crearÃ¡ un nuevo jugador, por lo que este serÃ¡ reemplazado
 	if (player != nullptr) {
 		space->removeDynamicActor(player);
-		// NO hacer delete player aquí - se manejará en loadLevel
+		// NO hacer delete player aquÃ­ - se manejarÃ¡ en loadLevel
 	}
+	
+	// NOTA: NO eliminar pad, buttonShoot y weaponSwitchButtons aquÃ­ porque se reutilizan entre niveles
 }
 
 void GameLayer::nextLevel() {
@@ -1271,7 +1370,7 @@ void GameLayer::nextLevel() {
 		// BONUS POR COMPLETAR NIVEL: Dar dinero extra
 		int levelBonus = 100 + (currentLevel * 75); // Nivel 1: 175, Nivel 2: 250, etc.
 		player->money += levelBonus;
-		cout << "¡NIVEL COMPLETADO! Bonus de " << levelBonus << " monedas. Dinero total: " << player->money << endl;
+		cout << "Â¡NIVEL COMPLETADO! Bonus de " << levelBonus << " monedas. Dinero total: " << player->money << endl;
 		
 		savedPlayerMoney = player->money;
 		savedPlayerLives = player->lives;
@@ -1282,14 +1381,14 @@ void GameLayer::nextLevel() {
 		savedPlayerWeapons = player->weapons;
 		hasPlayerData = true;
 		cout << "Estado del jugador guardado - Dinero: " << savedPlayerMoney << ", Vidas: " << savedPlayerLives << ", DISPAROS: " << savedPlayerShoots << endl;
-		cout << "Mejoras - Vida máxima: " << savedPlayerMaxLives << ", Daño: " << savedPlayerDamage << ", Velocidad: " << savedPlayerMoveSpeed << endl;
+		cout << "Mejoras - Vida mÃ¡xima: " << savedPlayerMaxLives << ", DaÃ±o: " << savedPlayerDamage << ", Velocidad: " << savedPlayerMoveSpeed << endl;
 	}
 	
 	if (currentLevel < totalLevels) {
 		currentLevel++;
 		
-		// NUEVO: Abrir automáticamente la tienda entre niveles
-		cout << "¡Nivel completado! Abriendo tienda antes del nivel " << currentLevel << endl;
+		// NUEVO: Abrir automÃ¡ticamente la tienda entre niveles
+		cout << "Â¡Nivel completado! Abriendo tienda antes del nivel " << currentLevel << endl;
 		game->layer = game->shopLayer;
 		// Pasar el jugador a la tienda
 		if (game->shopLayer != nullptr) {
@@ -1303,14 +1402,14 @@ void GameLayer::nextLevel() {
 		}
 	} else {
 		// Juego completado
-		cout << "¡Has completado todos los niveles!" << endl;
+		cout << "Â¡Has completado todos los niveles!" << endl;
 		// Puedes reiniciar el juego o mostrar pantalla de victoria
 		game->layer = game->inicioLayer;
 	}
 }
 
 Enemy* GameLayer::closestEnemy() {
-	if (enemies.empty()) return NULL;  // No hay enemigos
+
 
 	Enemy* closest = NULL;
 	float minDistanceSq = std::numeric_limits<float>::max(); // mejor usar distancia al cuadrado para eficiencia
@@ -1330,4 +1429,28 @@ Enemy* GameLayer::closestEnemy() {
 
 	return closest;
 }
+
+
+
+// NUEVO: MÃ©todo para manejar SuperEnemySpawners
+void GameLayer::updateSuperEnemySpawners() {
+	for (auto const& superSpawner : superEnemySpawners) {
+		superSpawner->update();
+		
+		if (superSpawner->shouldSpawn()) {
+			Enemy* superEnemy = superSpawner->spawnSuperEnemy();
+			
+			if (superEnemy != nullptr) {
+				// AÃ±adir a la lista normal de enemigos - Â¡MANTIENE SU LÃ“GICA ORIGINAL!
+				enemies.push_back(superEnemy);
+				space->addDynamicActor(superEnemy);
+				
+				std::cout << "Â¡SUPER ENEMIGO SPAWNEADO! Tipo: " << superSpawner->enemyType 
+				          << " - Vidas: " << superEnemy->lives 
+				          << " - DaÃ±o: " << superEnemy->damage << std::endl;
+			}
+		}
+	}
+}
+
 
